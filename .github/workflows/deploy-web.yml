@@ -43,5 +43,9 @@ jobs:
             docker pull joetae/backend-web:latest
 
             # 새로운 컨테이너 실행
-            docker run -d --name backend-web --network host -p 5000:5000 --env-file ~/26th-project-UniRent/26th-project-UniRent/backend/web/.env joetae/backend-web:latest
-          command_timeout: 20m
+            docker run -d --name backend-web -p 5000:5000 --env-file ~/26th-project-UniRent/26th-project-UniRent/backend/web/.env joetae/backend-web:latest
+          
+            sleep 5  # 컨테이너 실행을 위한 대기 시간
+            docker ps -a  # 컨테이너 목록 출력
+            docker logs backend-web  # 컨테이너 로그 출력
+          command_timeout: 30m
