@@ -1,29 +1,26 @@
-from fastapi import FastAPI
-from routes.user_routes import user_router
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from routes import users
 from routes.gateway_routes import gateway_router
-from database import get_connection
+from database import get_db
+from sqlalchemy import text
 
 app = FastAPI(title="UniRent API Gateway")
 
-# API Gateway & User Service 라우트 등록
-app.include_router(user_router, prefix="/users")
+# 라우터 등록
+app.include_router(users.router)
 app.include_router(gateway_router, prefix="/gateway")
 
+# DB 연결 확인 API
 @app.get("/db-test")
-def test_db():
+def test_db(db: Session = Depends(get_db)):
     try:
-        conn = get_connection()
-        if conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT NOW() AS current_time")
-                result = cursor.fetchone()
-            conn.close()
-            return {"db_connection": "successful", "current_time": result["current_time"]}
-        else:
-            return {"db_connection": "failed", "error": "Could not connect to database"}
+        result = db.execute(text("SELECT NOW()")).fetchone()
+        return {"db_connection": "successful", "current_time": result[0]}
     except Exception as e:
-        return {"error": str(e)}
+        return {"db_connection": "failed", "error": str(e)}
 
+# 홈 API
 @app.get("/")
 def home():
-    return {"message": "API Gateway & User Service Running with FastAPI!"}
+    return {"message": "Welcome to UniRent API - API Gateway Running with FastAPI!"}
