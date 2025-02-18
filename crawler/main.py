@@ -1,10 +1,12 @@
 from argparse import ArgumentParser
 from typing import Dict, Type
-from crawler import ThreeThreeCrawler
+from crawler import ThreeThreeCrawler, YanoljaCrawler, HowBoutHereCrawler
 
 # 모든 크롤링 클래스를 예시 형식으로 적어주세요. 
 CRAWLER_CLASSES = {
-    ThreeThreeCrawler,
+    # ThreeThreeCrawler,
+    # YanoljaCrawler,
+    HowBoutHereCrawler
 }
 
 def create_parser() -> ArgumentParser:
