@@ -43,7 +43,7 @@ class ThreeThreeCrawler(BaseCrawler):
         # options.add_argument("--headless")  # Run in headless mode (no UI)
         # options.add_argument("--disable-gpu")  # Recommended for some systems
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
-        self.url = f"https://33m2.co.kr/webpc/search/keyword?keyword=서대문구&start_date=2025-02-12&end_date=2025-02-18&week=1"
+        self.url = f"https://33m2.co.kr/webpc/search/keyword?keyword=서대문구%20연희동&start_date=2025-02-19&end_date=2025-02-25&week=1"
 
     def scrape_reviews(self):
         """Scrape reviews from the specified URL."""
