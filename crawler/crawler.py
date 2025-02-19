@@ -6,6 +6,7 @@ import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
 from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
 from time import sleep
@@ -35,7 +36,7 @@ class BaseCrawler(ABC):
             json.dump(self.data, f, ensure_ascii=False, indent=4)
 
 class ThreeThreeCrawler(BaseCrawler):
-    def __init__(self, output_dir: str):
+    def __init__(self, output_dir, place="서대문구"):
         super().__init__(output_dir)
         self.output_dir = os.path.join(output_dir, "threethree.json")
         self.data = []
@@ -43,29 +44,25 @@ class ThreeThreeCrawler(BaseCrawler):
         # options.add_argument("--headless")  # Run in headless mode (no UI)
         # options.add_argument("--disable-gpu")  # Recommended for some systems
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
-        self.url = f"https://33m2.co.kr/webpc/search/keyword?keyword=서대문구%20연희동&start_date=2025-02-19&end_date=2025-02-25&week=1"
+        self.url = f"https://33m2.co.kr/webpc/guest/main"
+        self.place = place
 
     def scrape_reviews(self):
         """Scrape reviews from the specified URL."""
         self.start_browser()
         driver = self.driver
         url = self.url
+        place = self.place
         
         driver.get(url)
         sleep(3)
         
-        # # 리뷰 더보기로 이동
-        # more_btn=browser.find_element(By.XPATH, '//*[@id="QA0Szd"]/div/div/div[1]/div[2]/div/div[1]/div/div/div[3]/div/div/button[2]')
-        # more_btn.click()
-        # sleep(3)
-        
-        # # div태그 스크롤 
-        # js_scripts = '''
-        # let aa = document.getElementsByClassName('section-scrollbox')[0];
-        # aa.scrollBy(0,10000);
-        # '''
-        # browser.execute_script(js_scripts)
-        # sleep(3) 
+        driver.find_element(By.XPATH, '//*[@id="btn_hide_notice_today"]').click()
+        sleep(0.5)
+        driver.find_element(By.XPATH, '//*[@id="txt_search_keyword"]').send_keys(place)
+        sleep(3)
+        driver.find_element(By.XPATH, '//*[@id="btn_search"]').click()
+        sleep(3)
         
         data = []
         page = 1
