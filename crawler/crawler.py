@@ -13,7 +13,7 @@ from time import sleep
 
 
 class BaseCrawler(ABC):
-    def __init__(self, output_dir: str):
+    def __init__(self, output_dir: str, place=""):
         self.output_dir = output_dir
         self.url = ""
         self.driver = None
@@ -32,13 +32,14 @@ class BaseCrawler(ABC):
 
     def save_to_database(self) -> None:
         """Save reviews."""
-        with open(self.output_dir, 'w') as f:
+        with open(os.path.join(self.output_dir, "data.json"), 'w') as f:
             json.dump(self.data, f, ensure_ascii=False, indent=4)
 
 class ThreeThreeCrawler(BaseCrawler):
     def __init__(self, output_dir, place="서대문구"):
         super().__init__(output_dir)
-        self.output_dir = os.path.join(output_dir, "threethree.json")
+        self.output_dir = os.path.join(output_dir, "threethree")
+        os.makedirs(self.output_dir, exist_ok=True)
         self.data = []
         options = Options()
         # options.add_argument("--headless")  # Run in headless mode (no UI)
@@ -82,12 +83,28 @@ class ThreeThreeCrawler(BaseCrawler):
                     room = {} 
 
                     # title
+                    img_dir = None
                     title_selector = 'body > div.wrap > section > div > div.room_detail > div.room_info > div.title > strong'
                     title = soup.select(title_selector)
                     if title:
                         room['title'] = title[0].text
+                        img_dir = os.path.join(self.output_dir, room['title'])
+                        os.makedirs(img_dir, exist_ok=True)
                     else:
                         room['title'] = ""
+                    
+                    # images
+                    if img_dir:
+                        parent_div = driver.find_element(By.CLASS_NAME, 'swiper-wrapper')
+                        images = parent_div.find_elements(By.TAG_NAME, "img")
+                        for index, img in enumerate(images):
+                            img_url = img.get_attribute("src")
+                            print(img_url)
+                            if img_url:
+                                img_data = re.get(img_url).content
+                                sleep(4)
+                                with open(f"{img_dir}/{index}.jpg", "wb") as file:
+                                    file.write(img_data)
                     
                     # addr
                     addr_selector = 'body > div.wrap > section > div > div.room_detail > div:nth-child(1) > p'
@@ -156,7 +173,7 @@ class ThreeThreeCrawler(BaseCrawler):
         self.data = data
                 
 class YanoljaCrawler(BaseCrawler):
-    def __init__(self, output_dir: str):
+    def __init__(self, output_dir: str, place="서대문구"):
         '''Constructor for JSCrawler'''
         super().__init__(output_dir)
         self.output_dir = os.path.join(output_dir, "yanolja.json")
@@ -269,7 +286,7 @@ class YanoljaCrawler(BaseCrawler):
         self.data = data
 
 class HowBoutHereCrawler(BaseCrawler):
-    def __init__(self, output_dir: str):
+    def __init__(self, output_dir: str, place="서대문구"):
         '''Constructor for JSCrawler'''
         super().__init__(output_dir)
         self.output_dir = os.path.join(output_dir, "howbouthere.json")
@@ -278,12 +295,14 @@ class HowBoutHereCrawler(BaseCrawler):
         # options.add_argument("--headless")  # Run in headless mode (no UI)
         options.add_argument("--disable-gpu")  # Recommended for some systems
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
-        self.url = "https://www.yeogi.com/domestic-accommodations?keyword=서울+서대문구&autoKeyword=서울+서대문구&checkIn=2025-02-17&checkOut=2025-02-18&personal=2&freeForm=false"
+        self.url = "https://www.yeogi.com"
+        self.place = place
     
     def scrape_reviews(self):
         driver = self.driver
         url = self.url
         driver.get(url)
+        place = self.place
         
         data = []
         i = 1
