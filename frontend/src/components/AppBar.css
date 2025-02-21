@@ -1,0 +1,26 @@
+.app-bar {
+  width: 100%;
+  background-color: #1f5abc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin-left: 20px; /* 왼쪽 여백 추가 */
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.nav-container {
+  margin-right: 20px; /* 오른쪽 여백 추가 */
+}

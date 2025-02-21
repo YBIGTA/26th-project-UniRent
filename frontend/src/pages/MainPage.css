@@ -1,0 +1,102 @@
+
+.main-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1f5abc;
+  padding: 5vh 5vw; /* 화면 크기에 따라 조정되는 패딩 */
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: #ffffff;
+  font-family: "Inter-Black", Helvetica;
+  font-size: 20px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 5px;
+  width: 90%;
+  /* max-width: 1100px;  */
+}
+
+
+.search-button {
+  padding: 10px 20px;
+}
+
+.title {
+  color: #ffffff;
+  font-family: "Inter-Black", Helvetica;
+  font-size: clamp(4rem, 10vw, 8rem); /* 최소 4rem, 최대 8rem */
+  font-weight: 900;
+  margin: 0;
+}
+
+.subtitle {
+  color: #ffffff;
+  font-family: "Inter-Bold", Helvetica;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 2px 0;
+}
+
+.description {
+  color: #ffffff;
+  font-family: "Inter-Medium", Helvetica;
+  font-size: 24px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.title, .subtitle, .description {
+  text-align: left;
+}
+
+.filter-box {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 15px 20px;
+  border-radius: 5px;
+  width: clamp(200px, 80%, 600px); /* 최소 300px, 최대 600px */
+  justify-content: space-between;
+}
+
+
+.filter-text {
+  font-size: 18px;
+  color: #000;
+  opacity: 0.8;
+}
+
+.filter-button {
+  background-color: #1f5abc;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
