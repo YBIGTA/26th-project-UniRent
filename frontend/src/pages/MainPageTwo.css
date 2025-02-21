@@ -1,0 +1,47 @@
+.main-page-two {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1f5abc;
+  padding: 5vh 5vw; /* 화면 크기에 따라 조정되는 패딩 */
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: #ffffff;
+  font-family: "Inter-Black", Helvetica;
+  font-size: 20px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+/* ✅ Logout 버튼 스타일 (네비게이션 버튼과 동일하게 적용) */
+.logout-button {
+  background-color: #1f5abc; /* 기존 버튼 색상 유지 */
+  color: #ffffff;
+  font-family: "Inter-Black", Helvetica;
+  font-size: 20px;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.logout-button:hover {
+  background-color: #003d99; /* 호버 시 더 진한 파란색 */
+}
