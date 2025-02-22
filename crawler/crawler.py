@@ -1,13 +1,11 @@
 import requests as re
 from bs4 import BeautifulSoup as bs
-import pandas as pd 
 import os
 import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
 from time import sleep
 
