@@ -1,3 +1,4 @@
+/* ✅ 전체 페이지 스타일 */
 .filtering-page {
   background-color: #ffffff;
   display: flex;
@@ -6,6 +7,7 @@
   width: 100%;
 }
 
+/* ✅ 필터 컨테이너 */
 .filter-container {
   display: flex;
   flex-direction: column;
@@ -15,9 +17,10 @@
   width: 80%;
   max-width: 600px;
   padding: 20px;
-  border-radius: 10px; /* 컨테이너 모서리 둥글게 */
+  border-radius: 10px;
 }
 
+/* ✅ 필터 그룹 스타일 */
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -30,46 +33,79 @@ label {
   font-weight: bold;
 }
 
-select, .slider {
+/* ✅ 드롭다운 스타일 */
+select {
   width: 100%;
   padding: 10px;
   border: 1px solid #cccccc;
   border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
 }
 
-/* ✅ 체크박스 그룹 개선 */
+
+/* ✅ 가격 필터 슬라이더 스타일 */
+.slider-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.slider-track {
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+  width: 100%;
+  position: relative;
+}
+
+.slider-thumb {
+  width: 22px;
+  height: 22px;
+  background: #1f5abc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+  cursor: grab;
+  transform: translateY(-8px);
+}
+
+/* ✅ 체크박스 그룹 */
 .checkbox-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* ✅ 체크박스 스타일 개선 */
+/* ✅ 체크박스 스타일 */
 .checkbox-label {
   font-size: 16px;
   font-weight: normal;
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer; /* 클릭 가능한 영역으로 표시 */
+  cursor: pointer;
   padding: 8px 12px;
   border-radius: 5px;
   transition: background-color 0.2s ease-in-out;
 }
 
-/* ✅ 체크박스 클릭 시 배경 강조 */
 .checkbox-label:hover {
   background-color: rgba(171, 171, 171, 0.1);
 }
 
-/* ✅ 체크박스 기본 스타일 변경 */
 .checkbox-label input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #1f5abc; /* 체크박스 색상을 브랜드 컬러로 */
+  accent-color: #1f5abc;
   cursor: pointer;
 }
 
+/* ✅ 필터 적용 버튼 */
 .apply-button {
   width: 100%;
   padding: 12px;

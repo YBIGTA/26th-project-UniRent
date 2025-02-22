@@ -10,8 +10,9 @@ router = APIRouter()
 async def add_property(property_data: Dict, db: MongoDB = Depends()):
     """MongoDB에 매물 추가 (자동 필드 추가)"""
     property_id = db.add_property(property_data)
+    db.close()
     return {"message": "매물이 추가되었습니다.", "property_id": property_id}
-
+    
 @router.get("/properties")
 async def get_properties(
     region: Optional[str] = Query(None, description="지역 (동 이름)"),
@@ -27,6 +28,7 @@ async def get_properties(
         filters["price"] = {"$gte": minPrice, "$lte": maxPrice}  # 가격 필터 적용
 
     properties = db.filter_properties(filters)
+    db.close()
     return {"properties": properties}
 
 @router.get("/properties/{property_id}")
@@ -35,6 +37,7 @@ async def get_property_by_id(property_id: str, db: MongoDB = Depends()):
     property_data = db.get_property_by_id(property_id)
     if property_data:
         return property_data
+    db.close()
     return {"message": "해당 매물을 찾을 수 없습니다."}
 
 @router.put("/properties/{property_id}")
@@ -43,6 +46,7 @@ async def update_property(property_id: str, update_data: Dict, db: MongoDB = Dep
     success = db.update_property(property_id, update_data)
     if success:
         return {"message": "매물 정보가 수정되었습니다."}
+    db.close()
     return {"message": "해당 매물을 찾을 수 없습니다."}
 
 @router.delete("/properties/{property_id}")
@@ -51,6 +55,7 @@ async def delete_property(property_id: str, db: MongoDB = Depends()):
     success = db.delete_property(property_id)
     if success:
         return {"message": "매물이 삭제되었습니다."}
+    db.close()
     return {"message": "해당 매물을 찾을 수 없습니다."}
 
 @router.post("/scraped-data/import")
@@ -69,5 +74,5 @@ async def import_scraped_data(db: MongoDB = Depends()):
         # MongoDB에 저장 시, 자동으로 region (동)과 price (숫자) 변환 적용
         property_id = db.add_property(property_data)
         inserted_ids.append(property_id)
-
+    db.close()
     return {"message": "크롤링된 데이터가 DB에 저장되었습니다.", "inserted_ids": inserted_ids}
