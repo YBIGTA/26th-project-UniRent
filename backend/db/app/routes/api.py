@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, Depends, Query
-from app.database.mongodb_connection import MongoDB
+from database.mongodb_connection import MongoDB
 from typing import Optional, Dict, List
 import json
 import os

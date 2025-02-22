@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # 라우터 등록
-app.include_router(api)
+app.include_router(api.router)
 
 @app.get("/")
 def root():
