@@ -1,67 +1,87 @@
 .filtering-page {
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  
-  .filter-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    margin-top: 40px;
-    width: 80%;
-    max-width: 600px;
-    padding: 20px;
-  }
-  
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 10px;
-  }
-  
-  label {
-    font-size: 16px;
-    font-weight: bold;
-  }
-  
-  select, .slider {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #cccccc;
-    border-radius: 5px;
-  }
-  
-  .checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  
-  .checkbox-label {
-    font-size: 14px;
-    font-weight: normal;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .apply-button {
-    width: 100%;
-    padding: 12px;
-    font-size: 18px;
-    background-color: #1f5abc;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .apply-button:hover {
-    background-color: #003d99;
-  }
-  
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.filter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 40px;
+  width: 80%;
+  max-width: 600px;
+  padding: 20px;
+  border-radius: 10px; /* 컨테이너 모서리 둥글게 */
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+}
+
+label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+select, .slider {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+}
+
+/* ✅ 체크박스 그룹 개선 */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ✅ 체크박스 스타일 개선 */
+.checkbox-label {
+  font-size: 16px;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer; /* 클릭 가능한 영역으로 표시 */
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* ✅ 체크박스 클릭 시 배경 강조 */
+.checkbox-label:hover {
+  background-color: rgba(171, 171, 171, 0.1);
+}
+
+/* ✅ 체크박스 기본 스타일 변경 */
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #1f5abc; /* 체크박스 색상을 브랜드 컬러로 */
+  cursor: pointer;
+}
+
+.apply-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  background-color: #1f5abc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.apply-button:hover {
+  background-color: #003d99;
+}

@@ -8,24 +8,25 @@ export const FilteringPage = () => {
   const navigate = useNavigate(); // ✅ 페이지 이동을 위한 훅
   const [price, setPrice] = useState(0);
   const [location, setLocation] = useState("");
-  const [ratings, setRatings] = useState([]); // ✅ 평점 다중 선택
+  const [accommodationTypes, setAccommodationTypes] = useState([]); // ✅ 숙박 유형 상태 추가
 
   const locations = [
     "창천동", "연희동", "홍제동", "북아현동", "남가좌동", "북가좌동", "신촌동"
   ];
 
   const handleApplyFilters = () => {
-    console.log("필터 적용:", { price, location, ratings });
+    console.log("필터 적용:", { price, location, accommodationTypes });
 
     // ✅ 필터링된 결과가 없어도 결과 페이지로 이동하게 설정
-    navigate("/filtering-results", { state: { price, location, ratings } });
+    navigate("/filtering-results", { state: { price, location, accommodationTypes } });
   };
 
-  const handleRatingChange = (value) => {
-    setRatings((prevRatings) =>
-      prevRatings.includes(value)
-        ? prevRatings.filter((rating) => rating !== value) // 이미 선택된 값이면 제거
-        : [...prevRatings, value] // 선택되지 않은 값이면 추가
+  // ✅ 숙박 유형 체크박스 선택 핸들러
+  const handleAccommodationTypeChange = (value) => {
+    setAccommodationTypes((prevTypes) =>
+      prevTypes.includes(value)
+        ? prevTypes.filter((type) => type !== value) // 이미 선택된 값이면 제거
+        : [...prevTypes, value] // 선택되지 않은 값이면 추가
     );
   };
 
@@ -33,7 +34,7 @@ export const FilteringPage = () => {
     <div className="filtering-page">
       <AppBar />
       <main className="filter-container">
-        <h2>필터를 활용해 원하는 조건의 숙소를 찾아보세요!</h2>
+        <h2>🔍 필터를 활용해 원하는 조건의 숙소를 찾아보세요!</h2>
 
         {/* 위치 필터 (드롭다운) */}
         <div className="filter-group">
@@ -60,19 +61,19 @@ export const FilteringPage = () => {
           />
         </div>
 
-        {/* 평점 필터 (다중 선택 체크박스) */}
+        {/* ✅ 숙박 유형 필터 (체크박스) */}
         <div className="filter-group">
-          <label>평점</label>
+          <label>숙박 유형</label>
           <div className="checkbox-group">
-            {[0, 1, 2, 3, 4].map((num) => (
-              <label key={num} className="checkbox-label">
+            {["원룸단기임대", "호텔(모텔)"].map((type) => (
+              <label key={type} className="checkbox-label">
                 <input
                   type="checkbox"
-                  value={num}
-                  checked={ratings.includes(num)}
-                  onChange={() => handleRatingChange(num)}
+                  value={type}
+                  checked={accommodationTypes.includes(type)}
+                  onChange={() => handleAccommodationTypeChange(type)}
                 />
-                {num}-{num + 1}점
+                {type}
               </label>
             ))}
           </div>
