@@ -7,18 +7,18 @@ import "./FilteringPage.css";
 export const FilteringPage = () => {
   const navigate = useNavigate(); // ✅ 페이지 이동을 위한 훅
   const [price, setPrice] = useState(0);
-  const [location, setLocation] = useState("");
+  const [region, setRegion] = useState("");
   const [accommodationTypes, setAccommodationTypes] = useState([]); // ✅ 숙박 유형 상태 추가
 
-  const locations = [
+  const regions = [
     "창천동", "연희동", "홍제동", "북아현동", "남가좌동", "북가좌동", "신촌동"
   ];
 
   const handleApplyFilters = () => {
-    console.log("필터 적용:", { price, location, accommodationTypes });
+    console.log("필터 적용:", { price, region, accommodationTypes });
 
     // ✅ 필터링된 결과가 없어도 결과 페이지로 이동하게 설정
-    navigate("/filtering-results", { state: { price, location, accommodationTypes } });
+    navigate("/filtering-results", { state: { price, region, accommodationTypes } });
   };
 
   // ✅ 숙박 유형 체크박스 선택 핸들러
@@ -36,13 +36,13 @@ export const FilteringPage = () => {
       <main className="filter-container">
         <h2>🔍 필터를 활용해 원하는 조건의 숙소를 찾아보세요!</h2>
 
-        {/* 위치 필터 (드롭다운) */}
+        {/* 지역 필터 (드롭다운) */}
         <div className="filter-group">
-          <label>위치</label>
-          <select value={location} onChange={(e) => setLocation(e.target.value)}>
+          <label>지역</label>
+          <select value={region} onChange={(e) => setRegion(e.target.value)}>
             <option value="">선택하세요</option>
-            {locations.map((loc) => (
-              <option key={loc} value={loc}>{loc}</option>
+            {regions.map((reg) => (
+              <option key={reg} value={reg}>{reg}</option>
             ))}
           </select>
         </div>
