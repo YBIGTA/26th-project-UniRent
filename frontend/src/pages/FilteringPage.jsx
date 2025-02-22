@@ -7,7 +7,7 @@ import "./FilteringPage.css";
 export const FilteringPage = () => {
   const navigate = useNavigate(); // ✅ 페이지 이동을 위한 훅
   const [price, setPrice] = useState(0);
-  const [region, setRegion] = useState("");
+  const [region, setRegion] = useState("창천동");
   const [accommodationTypes, setAccommodationTypes] = useState([]); // ✅ 숙박 유형 상태 추가
 
   const regions = [
@@ -40,7 +40,7 @@ export const FilteringPage = () => {
         <div className="filter-group">
           <label>지역</label>
           <select value={region} onChange={(e) => setRegion(e.target.value)}>
-            <option value="">선택하세요</option>
+            {/* <option value="">창천동</option> */}
             {regions.map((reg) => (
               <option key={reg} value={reg}>{reg}</option>
             ))}
