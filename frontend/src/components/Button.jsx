@@ -1,9 +1,13 @@
+// Button.jsx
 import React from "react";
-import "./Button.css"; // 버튼 스타일이 있으면 추가
+import "./Button.css";
 
-export const Button = ({ children, className, color, size }) => {
+export const Button = ({ children, className, color, size, onClick }) => {
   return (
-    <button className={`btn ${className} ${color} ${size}`}>
+    <button 
+      className={`btn ${className} ${color} ${size}`}
+      onClick={onClick}
+    >
       {children}
     </button>
   );
