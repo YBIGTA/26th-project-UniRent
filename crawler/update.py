@@ -240,7 +240,7 @@ def howbouthere(prevList):
                         break
                 
                 room['options'] = options
-                data.append(room)
+                data['new'].append(room)
 
                 # Get window handles
                 windows = driver.window_handles
