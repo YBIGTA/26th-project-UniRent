@@ -6,6 +6,7 @@ from app.user.user_repository import UserRepository
 from app.user.user_service import UserService
 from typing import Generator, Tuple
 
+
 def get_mysql_db() -> Generator[Session, None, None]:
     """MySQL용 DB 세션을 제공하는 FastAPI 의존성 주입 함수"""
     db = SessionLocal()
@@ -32,10 +33,4 @@ def get_databases() -> Generator[Tuple[Session, MongoDB], None, None]:
         mysql_db.close()
         mongodb.close()
 
-def get_user_repository(db: Session = Depends(get_mysql_db)) -> UserRepository:
-    """UserRepository가 MySQL과 연결되도록 설정"""
-    return UserRepository(db)
 
-def get_user_service(repo: UserRepository = Depends(get_user_repository)) -> UserService:
-    """UserService도 UserRepository와 함께 주입"""
-    return UserService(repo)
