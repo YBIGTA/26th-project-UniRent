@@ -4,8 +4,8 @@ from crawler import ThreeThreeCrawler, HowBoutHereCrawler
 
 # 모든 크롤링 클래스를 예시 형식으로 적어주세요. 
 CRAWLER_CLASSES = {
-    ThreeThreeCrawler,
-    # HowBoutHereCrawler
+    # ThreeThreeCrawler,
+    HowBoutHereCrawler
 }
 
 
