@@ -172,6 +172,8 @@ cython_debug/
 review_analysis/.DS_Store
 review_analysis/crawling/.DS_Store
 
+# node.js dependencies
+node_modules/
 
 # PEM 키 파일 무시
 *.pem
