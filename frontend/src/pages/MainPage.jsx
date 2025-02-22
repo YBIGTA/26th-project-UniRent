@@ -1,9 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./MainPage.css";
 import { Button } from "../components/Button";
 
 export const MainPage = ({ isAuthenticated }) => {
+  const navigate = useNavigate();
+
+  const handleFiltering = () => {
+    console.log('로그인 안 된 채로 필터 버튼 클릭됨, 로그인 페이지로 이동');
+    navigate('/login')
+  };
+  
   return (
     <main className="main-page">
       <header className="header">
@@ -38,7 +45,7 @@ export const MainPage = ({ isAuthenticated }) => {
           어떤 매물을 찾으시나요? 오른쪽 필터 버튼을 눌러보세요!
         </p>
         <Link to="/filtering">
-          <Button className="search-button" color="primary" size="medium">
+          <Button className="search-button" color="primary" size="medium" onClick={handleFiltering}>
             필터
           </Button>
         </Link>

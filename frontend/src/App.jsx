@@ -23,8 +23,13 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* ✅ 메인 페이지 (로그인 여부와 무관) */}
-        <Route path="/" element={<MainPage />} />
+        {/*         <Route path="/" element={<MainPage />} /> */}
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? <Navigate to="/main-two" /> : <MainPage />
+          }
+        />
 
         {/* ✅ 로그인 페이지 (로그인하면 MainPageTwo로 이동) */}
         <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
