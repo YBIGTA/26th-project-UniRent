@@ -112,6 +112,7 @@ def threethree(prevList):
                     for p in option_etc[0].find_all('p', recursive=True):
                         options.append(p.text)
                 room['options'] = options
+                room['url'] = driver.current_url
                 
                 data['new'].append(room)
                 # Get window handles
@@ -240,7 +241,8 @@ def howbouthere(prevList):
                         break
                 
                 room['options'] = options
-                data.append(room)
+                room['url'] = driver.current_url
+                data['new'].append(room)
 
                 # Get window handles
                 windows = driver.window_handles
