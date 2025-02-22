@@ -20,13 +20,13 @@ class BaseCrawler(ABC):
         self.driver = None
 
     def send_to_db(self, db: MongoDB = Depends()):
-    inserted_ids = []
-    for property_data in self.data:
-        # MongoDB에 저장 시, 자동으로 region (동)과 price (숫자) 변환 적용
-        property_id = db.add_property(property_data)
-        inserted_ids.append(property_id)
+        inserted_ids = []
+        for property_data in self.data:
+            # MongoDB에 저장 시, 자동으로 region (동)과 price (숫자) 변환 적용
+            property_id = db.add_property(property_data)
+            inserted_ids.append(property_id)
 
-    return {"message": "크롤링된 데이터가 DB에 저장되었습니다.", "inserted_ids": inserted_ids}
+        return {"message": "크롤링된 데이터가 DB에 저장되었습니다.", "inserted_ids": inserted_ids}
 
     def start_browser(self) -> None:
         '''start chrome browser'''
