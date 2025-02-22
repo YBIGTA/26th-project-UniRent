@@ -1,20 +1,20 @@
-
 .main-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #1f5abc;
-  padding: 5vh 5vw; /* 화면 크기에 따라 조정되는 패딩 */
+  padding: 5vh 5vw; 
   min-height: 100vh;
   box-sizing: border-box;
+  text-align: center; 
 }
-
 
 .header {
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; 
   padding: 20px;
+  /* align-items: center; // 필요하면 주석 해제 */
 }
 
 .nav {
@@ -28,27 +28,29 @@
   font-size: 20px;
   font-weight: 900;
   text-decoration: none;
+  transition: color 0.3s ease-in-out;
 }
 
+.nav-link:hover {
+  color: #dedede;
+}
+
+/* ===== 본문 컨텐츠 ===== */
 .content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  text-align: left;
+  text-align: left; 
   gap: 5px;
   width: 90%;
-  /* max-width: 1100px;  */
-}
-
-
-.search-button {
-  padding: 10px 20px;
+  margin-top: 40px;
+  max-width: 1100px; /* 너무 늘어나지 않게 제한 */
 }
 
 .title {
   color: #ffffff;
   font-family: "Inter-Black", Helvetica;
-  font-size: clamp(4rem, 10vw, 8rem); /* 최소 4rem, 최대 8rem */
+  font-size: clamp(4rem, 10vw, 8rem); /* 반응형 폰트 */
   font-weight: 900;
   margin: 0;
 }
@@ -69,28 +71,27 @@
   opacity: 0.8;
 }
 
-.title, .subtitle, .description {
-  text-align: left;
-}
-
+/* ===== 필터 박스 영역 ===== */
 .filter-box {
   display: flex;
   align-items: center;
   background-color: #ffffff;
   padding: 15px 20px;
   border-radius: 5px;
-  width: clamp(200px, 80%, 600px); /* 최소 300px, 최대 600px */
+  width: clamp(200px, 80%, 600px); /* 최소 200px, 최대 600px */
   justify-content: space-between;
+  margin-top: 40px; 
 }
-
 
 .filter-text {
   font-size: 18px;
   color: #000;
   opacity: 0.8;
+  margin-right: 10px;
 }
 
-.filter-button {
+/* ===== 필터 버튼 ===== */
+.search-button {
   background-color: #1f5abc;
   color: #ffffff;
   font-size: 18px;
@@ -99,4 +100,9 @@
   border: none;
   cursor: pointer;
   border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+  background-color: #174b90; /* 살짝 어두운 파랑으로 바뀌도록 */
 }
