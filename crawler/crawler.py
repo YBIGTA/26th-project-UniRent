@@ -37,7 +37,6 @@ class BaseCrawler(ABC):
 
 class ThreeThreeCrawler(BaseCrawler):
     def __init__(self, output_dir, place="서대문구"):
-        super().__init__(output_dir)
         self.output_dir = os.path.join(output_dir, "threethree")
         os.makedirs(self.output_dir, exist_ok=True)
         self.data = []
@@ -175,8 +174,8 @@ class ThreeThreeCrawler(BaseCrawler):
 class YanoljaCrawler(BaseCrawler):
     def __init__(self, output_dir: str, place="서대문구"):
         '''Constructor for JSCrawler'''
-        super().__init__(output_dir)
-        self.output_dir = os.path.join(output_dir, "yanolja.json")
+        self.output_dir = os.path.join(output_dir, "yanolja")
+        os.makedirs(self.output_dir, exist_ok=True)
         self.data = []
         options = Options()
         # options.add_argument("--headless")  # Run in headless mode (no UI)
@@ -194,10 +193,11 @@ class YanoljaCrawler(BaseCrawler):
         sleep(3)
         
         # div태그 스크롤 
-        # for i in range(20):
-        #     driver.execute_script("window.scrollBy(0, 100);")
-        #     sleep(0.1)
+        for i in range(35):
+            driver.execute_script("window.scrollBy(0, 500);")
+            sleep(0.5)
 
+        sleep(2)
         urls = []
         soup = bs(driver.page_source, 'html.parser')
         i = 2
@@ -235,10 +235,16 @@ class YanoljaCrawler(BaseCrawler):
             else:
                 room['title'] = ''
                 
-            addr_selector = '#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(3) > section > div > div > div.css-cxbger > div.address.css-3ih6hc > span'
-            addr = soup.select(addr_selector)
+            # addr_selector = '#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(3) > section > div > div > div.css-cxbger > div.address.css-3ih6hc'
+            # addr = soup.select(addr_selector)
+            # if addr:
+            #     room['addr'] = addr[0].text
+            # else:
+            #     room['addr'] = ''
+
+            addr = driver.find_element(By.XPATH, '//*[@id="__next"]/div/div/main/article/div[2]/div/div[3]/section/div/div/div[3]/div[1]/span')
             if addr:
-                room['addr'] = addr[0].text
+                room['addr'] = addr.text
             else:
                 room['addr'] = ''
             
@@ -288,14 +294,14 @@ class YanoljaCrawler(BaseCrawler):
 class HowBoutHereCrawler(BaseCrawler):
     def __init__(self, output_dir: str, place="서대문구"):
         '''Constructor for JSCrawler'''
-        super().__init__(output_dir)
-        self.output_dir = os.path.join(output_dir, "howbouthere.json")
+        self.output_dir = os.path.join(output_dir, "howbouthere")
+        os.makedirs(self.output_dir, exist_ok=True)
         self.data = []
         options = Options()
         # options.add_argument("--headless")  # Run in headless mode (no UI)
         options.add_argument("--disable-gpu")  # Recommended for some systems
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
-        self.url = "https://www.yeogi.com"
+        self.url = "https://www.yeogi.com/domestic-accommodations?keyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&autoKeyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&checkIn=2025-02-22&checkOut=2025-02-23&personal=2&freeForm=false"
         self.place = place
     
     def scrape_reviews(self):
@@ -319,10 +325,26 @@ class HowBoutHereCrawler(BaseCrawler):
                 title_selector = '#overview > div.css-3fvoms > div.css-mn17j9 > div.css-hn31yc > div.css-1tn66r8 > h1'
                 title = soup.select(title_selector)
                 
+                img_dir = None
                 if title:
                     room['title'] = title[0].text
+                    img_dir = os.path.join(self.output_dir, room['title'])
+                    os.makedirs(img_dir, exist_ok=True)
                 else:
                     room['title'] = ''
+
+                # image
+                if img_dir:
+                    parent_div = driver.find_element(By.XPATH, '//*[@id="overview"]/article/div[1]/ul')
+                    images = parent_div.find_elements(By.TAG_NAME, "img")
+                    for index, img in enumerate(images):
+                        img_url = img.get_attribute("src")
+                        print(img_url)
+                        if img_url:
+                            img_data = re.get(img_url).content
+                            sleep(4)
+                            with open(f"{img_dir}/{index}.jpg", "wb") as file:
+                                file.write(img_data)
                     
                 addr_selector = '#overview > div.css-3fvoms > div.css-y3ur5y > div.css-1insk2s > a > p'
                 addr = soup.select(addr_selector)

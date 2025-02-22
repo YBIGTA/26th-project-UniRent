@@ -6,7 +6,7 @@ from crawler import ThreeThreeCrawler, YanoljaCrawler, HowBoutHereCrawler
 CRAWLER_CLASSES = {
     ThreeThreeCrawler,
     # YanoljaCrawler,
-    # HowBoutHereCrawler
+    HowBoutHereCrawler
 }
 
 
