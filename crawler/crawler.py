@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from abc import ABC, abstractmethod
 from time import sleep
+import boto3
 
 
 class BaseCrawler(ABC):
@@ -42,7 +43,7 @@ class ThreeThreeCrawler(BaseCrawler):
         # options.add_argument("--headless")  # Run in headless mode (no UI)
         # options.add_argument("--disable-gpu")  # Recommended for some systems
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
-        self.url = f"https://33m2.co.kr/webpc/guest/main"
+        self.url = 'https://33m2.co.kr/webpc/search/keyword?keyword=서대문구&start_date=&end_date=&week='
         self.place = place
 
     def scrape_reviews(self):
@@ -54,20 +55,15 @@ class ThreeThreeCrawler(BaseCrawler):
         
         driver.get(url)
         sleep(3)
-        
-        driver.find_element(By.XPATH, '//*[@id="btn_hide_notice_today"]').click()
-        sleep(0.5)
-        driver.find_element(By.XPATH, '//*[@id="txt_search_keyword"]').send_keys(place)
-        sleep(3)
-        driver.find_element(By.XPATH, '//*[@id="btn_search"]').click()
-        sleep(3)
-        
+       
+        s3 = boto3.client('s3')
+        bucket_name = "uni-rent-bucket"
         data = []
         page = 1
         flag = True
         while flag:
 
-            for i in range(1, 16):
+            for i in range(1, 16): # to (1, 16)
                 try:
                     driver.find_element(By.XPATH, f'//*[@id="div_search_result_inner"]/div[2]/a[{i}]').click()
                     sleep(5)
@@ -78,30 +74,25 @@ class ThreeThreeCrawler(BaseCrawler):
                     soup = bs(driver.page_source, 'html.parser')
 
                     room = {} 
-
                     # title
-                    img_dir = None
+                    img_name = None
                     title_selector = 'body > div.wrap > section > div > div.room_detail > div.room_info > div.title > strong'
                     title = soup.select(title_selector)
                     if title:
                         room['title'] = title[0].text
-                        img_dir = os.path.join(self.output_dir, room['title'])
-                        os.makedirs(img_dir, exist_ok=True)
                     else:
                         room['title'] = ""
                     
                     # images
-                    if img_dir:
+                    if img_name:
                         parent_div = driver.find_element(By.CLASS_NAME, 'swiper-wrapper')
                         images = parent_div.find_elements(By.TAG_NAME, "img")
                         for index, img in enumerate(images):
                             img_url = img.get_attribute("src")
-                            print(img_url)
                             if img_url:
                                 img_data = re.get(img_url).content
-                                sleep(4)
-                                with open(f"{img_dir}/{index}.jpg", "wb") as file:
-                                    file.write(img_data)
+                                sleep(2)
+                                s3.upload_fileobj(img_data, bucket_name, f'{img_name}/{index}.jpg')
                     
                     # addr
                     addr_selector = 'body > div.wrap > section > div > div.room_detail > div:nth-child(1) > p'
@@ -157,138 +148,19 @@ class ThreeThreeCrawler(BaseCrawler):
                 if page == 1:
                     next = 1
                 elif page % 10 == 0:
-                    next = 10
+                    next = 11
                 else:
-                    next = (page + 1) % 10
-                page = (page + 1) % 10
+                    next = page % 10 + 1
+                page += 1
                 driver.find_element(By.XPATH, f'//*[@id="div_search_result_inner"]/div[3]/a[{next}]').click()
                 sleep(2)
             except Exception as e:
+                print(page)
                 print(e)
                 flag = False
                 
         self.data = data
                 
-class YanoljaCrawler(BaseCrawler):
-    def __init__(self, output_dir: str, place="서대문구"):
-        '''Constructor for JSCrawler'''
-        self.output_dir = os.path.join(output_dir, "yanolja")
-        os.makedirs(self.output_dir, exist_ok=True)
-        self.data = []
-        options = Options()
-        # options.add_argument("--headless")  # Run in headless mode (no UI)
-        options.add_argument("--disable-gpu")  # Recommended for some systems
-        self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
-        self.url = f"https://www.yanolja.com/motel/r-900400?pageKey=1739609488992"
-        
-    def scrape_urls(self) -> list:
-        """Scrape reviews from the specified URL."""
-        self.start_browser()
-        driver = self.driver
-        url = self.url
-        
-        driver.get(url)
-        sleep(3)
-        
-        # div태그 스크롤 
-        for i in range(35):
-            driver.execute_script("window.scrollBy(0, 500);")
-            sleep(0.5)
-
-        sleep(2)
-        urls = []
-        soup = bs(driver.page_source, 'html.parser')
-        i = 2
-        while True:
-            try:
-                a_selector = f'#__next > div > main > section > div.PlaceListBody_listContainer__2qFG1 > div:nth-child({i}) > a'
-                a = soup.select(a_selector)[0]
-                motel_url = f'https://www.yanolja.com{a.get("href")}'
-                urls.append(motel_url)
-                i += 1
-            except:
-                break
-        
-        driver.quit()
-        
-        return urls
-
-    def scrape_reviews(self):
-        urls = self.scrape_urls()
-        
-        data = []
-        for url in urls:
-            options = Options()
-            driver = webdriver.Chrome(options=options)
-            driver.get(url)
-            sleep(4)
-
-            soup = bs(driver.page_source, 'html.parser')
-            room = {}
-
-            title_selector = '#__next > div > div > main > article > div.css-1cc3d9 > div > div.css-nmmkf9 > div.css-11vo59c > h1'
-            title = soup.select(title_selector)
-            if title:
-                room['title'] = title[0].text
-            else:
-                room['title'] = ''
-                
-            # addr_selector = '#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(3) > section > div > div > div.css-cxbger > div.address.css-3ih6hc'
-            # addr = soup.select(addr_selector)
-            # if addr:
-            #     room['addr'] = addr[0].text
-            # else:
-            #     room['addr'] = ''
-
-            addr = driver.find_element(By.XPATH, '//*[@id="__next"]/div/div/main/article/div[2]/div/div[3]/section/div/div/div[3]/div[1]/span')
-            if addr:
-                room['addr'] = addr.text
-            else:
-                room['addr'] = ''
-            
-            price = {}
-            day_selector = '#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(2) > div > div.css-1cvl589 > div:nth-child(1) > div > div > section.room-rate-plan-container.css-15qkreq > div:nth-child(1) > a > div.css-19f5u8z > div.css-f586hh > div.rack_price'
-            day = soup.select(day_selector)
-            if day:
-                price['숙박'] = day[0].text
-            else:
-                price['숙박'] = ''
-            hour_selector = '#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(2) > div > div.css-1cvl589 > div:nth-child(1) > div > div > section.room-rate-plan-container.css-15qkreq > div:nth-child(2) > a > div.css-1q7riaf > div.css-1axapta > div > span.price'
-            hour = soup.select(hour_selector)
-            if hour:
-                price['대실'] = hour[0].text
-            else:
-                price['대실'] = ''
-            room['price_table'] = price
-
-            options = []
-            service_selector = '#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(6) > div > div > div.css-19tl48v > div:nth-child(2)'
-            service = soup.select(service_selector)
-            if service:
-                i = 1
-                for opt in service[0].find_all('div', recursive=False):
-                    opt_selector = f'#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(6) > div > div > div.css-19tl48v > div:nth-child(2) > div:nth-child({i}) > span:nth-child(2)'
-                    opt = soup.select(opt_selector)
-                    if opt:
-                        options.append(opt[0].text)
-                    i += 1
-            
-            service_selector = '#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(6) > div > div > div.css-19tl48v > div:nth-child(4)'
-            service = soup.select(service_selector)
-            if service:
-                i = 1
-                for opt in service[0].find_all('div', recursive=False):
-                    opt_selector = f'#__next > div > div > main > article > div.css-c45a2y > div > div:nth-child(6) > div > div > div.css-19tl48v > div:nth-child(4) > div:nth-child({i}) > span'
-                    opt = soup.select(opt_selector)
-                    if opt:
-                        options.append(opt[0].text)
-                    i += 1
-            room['options'] = options
-            data.append(room)
-            driver.quit()
-        
-        self.data = data
-
 class HowBoutHereCrawler(BaseCrawler):
     def __init__(self, output_dir: str, place="서대문구"):
         '''Constructor for JSCrawler'''

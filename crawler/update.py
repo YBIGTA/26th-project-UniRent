@@ -17,7 +17,7 @@ def threethree(prevList):
     currList = []
 
     s3 = boto3.client('s3')
-    bucket_name = ""
+    bucket_name = "uni-rent-bucket"
     
     url = 'https://33m2.co.kr/webpc/search/keyword?keyword=서대문구&start_date=&end_date=&week='
     driver = webdriver.Chrome()
@@ -123,12 +123,13 @@ def threethree(prevList):
             if page == 1:
                 next = 1
             elif page % 10 == 0:
-                next = 10
+                next = 11
             else:
-                next = (page + 1) % 10
-            page = (page + 1) % 10
+                next = page % 10 + 1
+            page += 1
             driver.find_element(By.XPATH, f'//*[@id="div_search_result_inner"]/div[3]/a[{next}]').click()
             sleep(2)
+
         except Exception as e:
             print(e)
             flag = False
