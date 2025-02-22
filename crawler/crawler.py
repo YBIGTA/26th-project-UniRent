@@ -56,6 +56,7 @@ class ThreeThreeCrawler(BaseCrawler):
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
         self.url = 'https://33m2.co.kr/webpc/search/keyword?keyword=서대문구&start_date=&end_date=&week='
         self.place = place
+        self.name = "ThreeThreeCrawler"
 
     def scrape_reviews(self):
         """Scrape reviews from the specified URL."""
@@ -184,6 +185,7 @@ class HowBoutHereCrawler(BaseCrawler):
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
         self.url = "https://www.yeogi.com/domestic-accommodations?keyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&autoKeyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&checkIn=2025-02-22&checkOut=2025-02-23&personal=2&freeForm=false"
         self.place = place
+        self.name = "HowBoutHereCrawler"
     
     def scrape_reviews(self):
         driver = self.driver
