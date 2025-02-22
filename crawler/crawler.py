@@ -139,6 +139,7 @@ class ThreeThreeCrawler(BaseCrawler):
                             options.append(p.text)
                     room['options'] = options
                     
+                    room['url'] = driver.current_url
                     data.append(room)
                     # Get window handles
                     windows = driver.window_handles
@@ -260,6 +261,7 @@ class HowBoutHereCrawler(BaseCrawler):
                             break
                     
                     room['options'] = options
+                    room['url'] = driver.current_url
                     data.append(room)
 
                     # Get window handles
