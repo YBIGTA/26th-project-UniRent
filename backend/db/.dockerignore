@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# PEM 키 파일 무시
+*.pem
+*.key
+id_rsa
+id_rsa.pub
