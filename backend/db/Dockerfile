@@ -23,14 +23,13 @@ RUN mkdir -p /etc/apt/keyrings \
 RUN echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
     > /etc/apt/sources.list.d/google-chrome.list
 
-# 최신 Stable Chrome 설치
+# Chrome 114 설치 (최신 버전이 아닌 특정 버전 고정)
 RUN apt-get update \
- && apt-get install -y google-chrome-stable \
+ && apt-get install -y google-chrome-stable=114.0.5735.90-1 \
  && rm -rf /var/lib/apt/lists/*
 
-# 최신 ChromeDriver 설치
-RUN CHROMEDRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE) \
- && wget -N https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip -P /tmp/ \
+# ChromeDriver 114 설치 (버전 고정)
+RUN wget -N https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip -P /tmp/ \
  && unzip /tmp/chromedriver_linux64.zip -d /usr/local/bin/ \
  && rm /tmp/chromedriver_linux64.zip
 

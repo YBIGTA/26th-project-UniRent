@@ -299,8 +299,7 @@ def update_del(data, db: MongoDB = Depends()):
 def update_func():
     dict_ = {"howbouthere": "모텔",
            "threethree": "단기임대"}
-    for key, value in dict_:
-
+    for key, value in dict_.items():  # 🔹 올바른 수정
         titles = get_titles_by_type(value)
         data = update(titles, key)
         update_del(data)
