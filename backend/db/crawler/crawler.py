@@ -36,6 +36,7 @@ class BaseCrawler(ABC):
         os.system("pkill -f chrome || true")
 
         options = webdriver.ChromeOptions()
+        options.binary_location = "/opt/chrome/chrome-linux64/chrome"  # ✅ Chrome 실행 파일 경로 설정
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
@@ -44,7 +45,8 @@ class BaseCrawler(ABC):
         # ✅ 프로세스별로 고유한 `user-data-dir` 설정
         options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")
 
-        self.driver = webdriver.Chrome(options=options)
+        service = webdriver.chrome.service.Service("/usr/local/bin/chromedriver")  # ✅ Chromedriver 경로 지정
+        self.driver = webdriver.Chrome(service=service, options=options)
         self.driver.maximize_window()
         self.driver.get(self.url)
         sleep(3)
