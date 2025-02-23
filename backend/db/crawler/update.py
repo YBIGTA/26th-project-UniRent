@@ -274,7 +274,7 @@ def update(prevList, site):
     data = updater(prevList)
     return data
 
-def send_to_db(data, db: MongoDB = Depends(get_mongodb)):
+def send_to_db(data, db: MongoDB):
     inserted_ids = []
     for property_data in data:
         # MongoDB에 저장 시, 자동으로 region (동)과 price (숫자) 변환 적용
@@ -285,12 +285,12 @@ def send_to_db(data, db: MongoDB = Depends(get_mongodb)):
 
     return {"message": "크롤링된 데이터가 DB에 저장되었습니다.", "inserted_ids": inserted_ids}
 
-def get_titles_by_type(type, db: MongoDB = Depends(get_mongodb)):
+def get_titles_by_type(type, db: MongoDB):
     titles = db.get_titles_by_type(type)
     db.close()
     return titles
 
-def update_del(data, db: MongoDB = Depends(get_mongodb)):
+def update_del(data, db: MongoDB):
     for property_data in data["new"]:
         property_id = db.add_property(property_data)
 
@@ -299,8 +299,13 @@ def update_del(data, db: MongoDB = Depends(get_mongodb)):
 
 def update_func():
     dict_ = {"howbouthere": "모텔",
-           "threethree": "단기임대"}
-    for key, value in dict_.items():  # 🔹 올바른 수정
-        titles = get_titles_by_type(value)
+             "threethree": "단기임대"}
+    
+    db = get_mongodb()  # ✅ 명시적으로 MongoDB 객체 생성
+    
+    for key, value in dict_.items():
+        titles = get_titles_by_type(value, db)  # ✅ 명시적으로 db 전달
         data = update(titles, key)
-        update_del(data)
+        update_del(data, db)  # ✅ db 전달
+    
+    db.close()  # ✅ MongoDB 연결 종료

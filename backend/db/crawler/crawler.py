@@ -54,7 +54,14 @@ class ThreeThreeCrawler(BaseCrawler):
         options = Options()
         # options.add_argument("--headless")  # Run in headless mode (no UI)
         # options.add_argument("--disable-gpu")  # Recommended for some systems
+        options.add_argument("--no-sandbox")  # 보안 모드 비활성화 (Docker 실행 시 필수)
+        options.add_argument("--disable-dev-shm-usage")  # 메모리 부족 문제 방지
+        options.add_argument("--disable-gpu")  # GPU 가속 비활성화 (Docker 내에서 필요할 수 있음)
+        options.add_argument("--remote-debugging-port=9222")  # 디버깅 포트 설정
+        options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # 고유한 사용자 데이터 디렉토리 지정
+
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
+        options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # 고유한 사용자 데이터 디렉토리 지정
         self.url = 'https://33m2.co.kr/webpc/search/keyword?keyword=서대문구&start_date=&end_date=&week='
         self.place = place
         self.name = "단기임대"
