@@ -47,7 +47,8 @@ class BaseCrawler(ABC):
 
         service = webdriver.chrome.service.Service("/usr/local/bin/chromedriver-linux64/chromedriver")  # ✅ Chromedriver 경로 지정
         self.driver = webdriver.Chrome(service=service, options=options)
-        self.driver.maximize_window()
+        # self.driver.maximize_window()
+        self.driver.set_window_size(1920, 1080)
         self.driver.get(self.url)
         sleep(3)
 
