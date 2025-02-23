@@ -1,0 +1,62 @@
+name: Deploy DB Service to EC2
+
+on:
+  push:
+    paths:
+      - 'backend/db/**'  # backend/db 디렉토리 내 변경 사항이 감지될 때만 실행
+    branches:
+      - main  # main 브랜치에 push될 때 실행
+
+jobs:
+  build-and-push:
+    name: Build and Push DB Service Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DB_SERVICE_DOCKER_PASS }}" | docker login -u "${{ secrets.DB_SERVICE_DOCKER_USER }}" --password-stdin
+
+      - name: Build DB Service Docker Image
+        run: |
+          cd backend/db  # backend/db 디렉토리로 이동
+          docker build -t ${{ secrets.DB_SERVICE_DOCKER_USER }}/db-service:latest .
+
+      - name: Push Docker Image to Docker Hub
+        run: docker push ${{ secrets.DB_SERVICE_DOCKER_USER }}/db-service:latest
+
+  deploy:
+    name: Deploy DB Service to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DB_SERVICE_EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.DB_SERVICE_EC2_SSH_KEY }}
+          script: |
+            echo "Deploying DB Service to EC2..."
+
+            # 기존 실행 중인 컨테이너 중지 및 삭제
+            echo "Stopping and removing existing DB containers..."
+            sudo docker stop db-service || true
+            sudo docker rm db-service || true
+
+            # 기존 Docker 이미지 삭제
+            echo "Removing old DB Service Docker images..."
+            sudo docker rmi -f ${{ secrets.DB_SERVICE_DOCKER_USER }}/db-service:latest || true
+
+            # 최신 Docker 이미지 가져오기
+            echo "Pulling the latest DB Service Docker image..."
+            sudo docker pull ${{ secrets.DB_SERVICE_DOCKER_USER }}/db-service:latest
+
+            # 새 컨테이너 실행 (내부 .env 사용)
+            echo "Running the new DB Service container..."
+            sudo docker run -d --name db-service --env-file /home/ubuntu/.env ${{ secrets.DB_SERVICE_DOCKER_USER }}/db-service:latest
+
+            echo "DB Service Deployment Completed!"
