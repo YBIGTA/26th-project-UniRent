@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import time
 import threading
+from database.mongodb_connection import MongoDB
 
 # 라우터 추가
 from app.routes import api
@@ -39,19 +40,32 @@ def root():
 
 def init_db():
     output_dir = "./data"
-    for crawler_class in CRAWLER_CLASSES:
-        crawler = crawler_class(output_dir)
-        crawler.scrape_reviews()
-        crawler.send_to_db(crawler_class.name)
+    db = MongoDB()  # ✅ 명시적으로 MongoDB 객체 생성
+    try:
+        for crawler_class in CRAWLER_CLASSES:
+            crawler = crawler_class(output_dir)
+            crawler.scrape_reviews()
+            crawler.send_to_db(crawler_class.name, db)  # ✅ MongoDB 객체 전달
+    finally:
+        db.close()  # ✅ MongoDB 연결 종료
 
 def init_update():
-    while True:
-        update_func()
-        print("업데이트를 완료하였습니다")
-        time.sleep(5000)
+    db = MongoDB()  # ✅ MongoDB 객체 직접 생성
+    try:
+        while True:
+            update_func(db)  # ✅ MongoDB 객체 전달
+            print("업데이트를 완료하였습니다")
+            time.sleep(5000)
+    finally:
+        db.close()  # ✅ MongoDB 연결 종료
 
 def background_tasks():
-    threading.Thread(target=init_db, daemon=True).start()
+    # ✅ 크롤링 및 DB 저장이 완료될 때까지 기다림
+    db_thread = threading.Thread(target=init_db)
+    db_thread.start()
+    db_thread.join()  # ✅ init_db()가 완료될 때까지 대기
+
+    # ✅ init_db()가 완료된 후 업데이트 실행
     threading.Thread(target=init_update, daemon=True).start()
 
 # ✅ FastAPI가 실행될 때 background_tasks() 실행

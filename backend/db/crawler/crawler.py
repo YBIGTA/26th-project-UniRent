@@ -19,7 +19,7 @@ class BaseCrawler(ABC):
         self.url = ""
         self.driver = None
 
-    def send_to_db(self, name, db: MongoDB = Depends()):
+    def send_to_db(self, name, db: MongoDB):
         inserted_ids = []
         for property_data in self.data:
             # MongoDB에 저장 시, 자동으로 region (동)과 price (숫자) 변환 적용
@@ -31,11 +31,24 @@ class BaseCrawler(ABC):
 
     def start_browser(self) -> None:
         '''start chrome browser'''
-        driver = webdriver.Chrome()
-        driver.maximize_window()
-        driver.get(self.url)
+
+        # ✅ 기존 실행 중인 Chrome 프로세스 강제 종료
+        os.system("pkill -f chrome || true")
+
+        options = webdriver.ChromeOptions()
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--remote-debugging-port=9222")
+        
+        # ✅ 프로세스별로 고유한 `user-data-dir` 설정
+        options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")
+
+        self.driver = webdriver.Chrome(options=options)
+        self.driver.maximize_window()
+        self.driver.get(self.url)
         sleep(3)
-        self.driver = driver
+
 
     @abstractmethod
     def scrape_reviews(self):
@@ -51,17 +64,7 @@ class ThreeThreeCrawler(BaseCrawler):
         self.output_dir = os.path.join(output_dir, "threethree")
         os.makedirs(self.output_dir, exist_ok=True)
         self.data = []
-        options = Options()
-        # options.add_argument("--headless")  # Run in headless mode (no UI)
-        # options.add_argument("--disable-gpu")  # Recommended for some systems
-        options.add_argument("--no-sandbox")  # 보안 모드 비활성화 (Docker 실행 시 필수)
-        options.add_argument("--disable-dev-shm-usage")  # 메모리 부족 문제 방지
-        options.add_argument("--disable-gpu")  # GPU 가속 비활성화 (Docker 내에서 필요할 수 있음)
-        options.add_argument("--remote-debugging-port=9222")  # 디버깅 포트 설정
-        options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")  # ✅ 프로세스별 디렉토리 지정
-
-        self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
-        options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # 고유한 사용자 데이터 디렉토리 지정
+        
         self.url = 'https://33m2.co.kr/webpc/search/keyword?keyword=서대문구&start_date=&end_date=&week='
         self.place = place
         self.name = "단기임대"
@@ -187,21 +190,13 @@ class HowBoutHereCrawler(BaseCrawler):
         self.output_dir = os.path.join(output_dir, "howbouthere")
         os.makedirs(self.output_dir, exist_ok=True)
         self.data = []
-        options = Options()
-        # options.add_argument("--headless")  # Run in headless mode (no UI)
-        # options.add_argument("--disable-gpu")  # Recommended for some systems
-        options.add_argument("--no-sandbox")  # 보안 모드 비활성화 (Docker 실행 시 필수)
-        options.add_argument("--disable-dev-shm-usage")  # 메모리 부족 문제 방지
-        options.add_argument("--disable-gpu")  # GPU 가속 비활성화 (Docker 내에서 필요할 수 있음)
-        options.add_argument("--remote-debugging-port=9222")  # 디버깅 포트 설정
-        options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")  # ✅ 프로세스별 디렉토리 지정
-
-        self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
+        
         self.url = "https://www.yeogi.com/domestic-accommodations?keyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&autoKeyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&checkIn=2025-02-22&checkOut=2025-02-23&personal=2&freeForm=false"
         self.place = place
         self.name = "모텔"
     
     def scrape_reviews(self):
+        self.start_browser()
         driver = self.driver
         url = self.url
         driver.get(url)

@@ -297,12 +297,11 @@ def update_del(data, db: MongoDB):
     del_num = db.delete_properties_by_titles(data["delete"])
     db.close()
 
-def update_func():
-    dict_ = {"howbouthere": "모텔",
-             "threethree": "단기임대"}
+def update_func(db: MongoDB):
+    dict_ = {"howbouthere": "모텔", "threethree": "단기임대"}
     
-    with get_mongodb() as db:  # ✅ generator를 컨텍스트 매니저로 사용하여 객체로 변환
-        for key, value in dict_.items():
-            titles = get_titles_by_type(value, db)  # ✅ db가 올바르게 전달됨
-            data = update(titles, key)
-            update_del(data, db)  # ✅ db 전달
+    for key, value in dict_.items():
+        titles = get_titles_by_type(value, db)  # ✅ MongoDB 객체 전달
+        data = update(titles, key)
+        update_del(data, db)  # ✅ MongoDB 객체 전달
+
