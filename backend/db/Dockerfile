@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Chrome 133 다운로드 및 설치
 RUN wget -O /tmp/chrome-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/133.0.6943.126/linux64/chrome-linux64.zip \
     && unzip /tmp/chrome-linux64.zip -d /opt/chrome/ \
-    && rm /tmp/chrome-linux64.zip
+    && rm /tmp/chrome-linux64.zip \
+    && chmod +x /opt/chrome/chrome-linux64/chrome  # ✅ 실행 권한 부여
 
 # Chrome 실행 파일 경로 설정
 ENV CHROME_BIN=/opt/chrome/chrome-linux64/chrome
@@ -24,16 +25,19 @@ ENV PATH="$CHROME_BIN:$PATH"
 # ChromeDriver 133 다운로드 및 설치
 RUN wget -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/133.0.6943.126/linux64/chromedriver-linux64.zip \
     && unzip /tmp/chromedriver-linux64.zip -d /usr/local/bin/ \
-    && rm /tmp/chromedriver-linux64.zip
+    && rm /tmp/chromedriver-linux64.zip \
+    && mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
+    && chmod +x /usr/local/bin/chromedriver  # ✅ 실행 권한 부여
 
-# 가상 디스플레이 설정
+# 환경 변수 설정 (Selenium이 Chrome 및 Chromedriver를 찾을 수 있도록 함)
 ENV DISPLAY=:99
+ENV PATH="/usr/local/bin:$PATH"
 
 # Python 패키지 설치
-COPY requirements.txt .
+COPY requirements.txt . 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 소스 복사
+# 소스 코드 복사
 COPY . .
 
 # FastAPI & Xvfb 실행

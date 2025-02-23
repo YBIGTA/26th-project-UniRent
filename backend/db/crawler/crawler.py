@@ -45,8 +45,8 @@ class BaseCrawler(ABC):
         # ✅ 프로세스별로 고유한 `user-data-dir` 설정
         options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")
 
-        service = webdriver.chrome.service.Service("/usr/local/bin/chromedriver-linux64/chromedriver")  # ✅ Chromedriver 경로 지정
-        self.driver = webdriver.Chrome(service=service, options=options)
+        # service = webdriver.chrome.service.Service("/usr/local/bin/chromedriver-linux64/chromedriver")  # ✅ Chromedriver 경로 지정
+        self.driver = webdriver.Chrome(options=options)
         # self.driver.maximize_window()
         self.driver.set_window_size(1920, 1080)
         self.driver.get(self.url)
@@ -63,6 +63,7 @@ class BaseCrawler(ABC):
             json.dump(self.data, f, ensure_ascii=False, indent=4)
 
 class ThreeThreeCrawler(BaseCrawler):
+    name = "단기임대"
     def __init__(self, output_dir, place="서대문구"):
         self.output_dir = os.path.join(output_dir, "threethree")
         os.makedirs(self.output_dir, exist_ok=True)
@@ -70,7 +71,7 @@ class ThreeThreeCrawler(BaseCrawler):
         
         self.url = 'https://33m2.co.kr/webpc/search/keyword?keyword=서대문구&start_date=&end_date=&week='
         self.place = place
-        self.name = "단기임대"
+        
 
     def scrape_reviews(self):
         """Scrape reviews from the specified URL."""
@@ -188,6 +189,7 @@ class ThreeThreeCrawler(BaseCrawler):
         self.data = data
                 
 class HowBoutHereCrawler(BaseCrawler):
+    name = "모텔"
     def __init__(self, output_dir: str, place="서대문구"):
         '''Constructor for JSCrawler'''
         self.output_dir = os.path.join(output_dir, "howbouthere")
@@ -196,7 +198,6 @@ class HowBoutHereCrawler(BaseCrawler):
         
         self.url = "https://www.yeogi.com/domestic-accommodations?keyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&autoKeyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&checkIn=2025-02-22&checkOut=2025-02-23&personal=2&freeForm=false"
         self.place = place
-        self.name = "모텔"
     
     def scrape_reviews(self):
         self.start_browser()
