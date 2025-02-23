@@ -11,6 +11,7 @@ from time import sleep
 import boto3
 from fastapi import FastAPI, APIRouter, Depends, Query
 from database.mongodb_connection import MongoDB
+from app.dependencies import get_mongodb
 
 
 def threethree(prevList):
@@ -273,7 +274,7 @@ def update(prevList, site):
     data = updater(prevList)
     return data
 
-def send_to_db(data, db: MongoDB = Depends()):
+def send_to_db(data, db: MongoDB = Depends(get_mongodb)):
     inserted_ids = []
     for property_data in data:
         # MongoDB에 저장 시, 자동으로 region (동)과 price (숫자) 변환 적용
@@ -284,12 +285,12 @@ def send_to_db(data, db: MongoDB = Depends()):
 
     return {"message": "크롤링된 데이터가 DB에 저장되었습니다.", "inserted_ids": inserted_ids}
 
-def get_titles_by_type(type, db: MongoDB = Depends()):
+def get_titles_by_type(type, db: MongoDB = Depends(get_mongodb)):
     titles = db.get_titles_by_type(type)
     db.close()
     return titles
 
-def update_del(data, db: MongoDB = Depends()):
+def update_del(data, db: MongoDB = Depends(get_mongodb)):
     for property_data in data["new"]:
         property_id = db.add_property(property_data)
 
