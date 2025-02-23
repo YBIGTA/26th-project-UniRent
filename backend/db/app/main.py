@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 import os
 import time
 import threading
@@ -21,19 +19,16 @@ app = FastAPI()
 # CORS 설정 추가
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 모든 도메인에서 API 호출 가능 (보안 필요시 특정 도메인만 허용)
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # 모든 HTTP 메서드 허용 (GET, POST, PUT, DELETE 등)
-    allow_headers=["*"],  # 모든 헤더 허용
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 
 CRAWLER_CLASSES = {
     ThreeThreeCrawler,
     HowBoutHereCrawler
 }
-
-
-
 
 # 라우터 등록
 app.include_router(api.router)
@@ -56,8 +51,14 @@ def init_update():
         time.sleep(5000)
 
 def background_tasks():
-    init_db()
-    init_update()
+    threading.Thread(target=init_db, daemon=True).start()
+    threading.Thread(target=init_update, daemon=True).start()
+
+# ✅ FastAPI가 실행될 때 background_tasks() 실행
+@app.on_event("startup")
+def on_startup():
+    background_tasks()
+
 
 if __name__ == "__main__":
     # ✅ 백그라운드에서 실행

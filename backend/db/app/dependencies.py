@@ -1,9 +1,6 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from database.mysql_connection import SessionLocal
 from database.mongodb_connection import MongoDB
-from app.user.user_repository import UserRepository
-from app.user.user_service import UserService
 from typing import Generator, Tuple
 
 
