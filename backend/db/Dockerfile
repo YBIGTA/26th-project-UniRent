@@ -12,26 +12,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxdamage1 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 \
  && rm -rf /var/lib/apt/lists/*
 
-# GPG 키 등록
-RUN mkdir -p /etc/apt/keyrings \
- && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub -o /tmp/google.pub \
- && gpg --dearmor /tmp/google.pub \
- && mv /tmp/google.pub.gpg /etc/apt/keyrings/google.gpg \
- && rm /tmp/google.pub
+# Chrome 133 다운로드 및 설치
+RUN wget -O /tmp/chrome-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/133.0.6943.126/linux64/chrome-linux64.zip \
+    && unzip /tmp/chrome-linux64.zip -d /opt/chrome/ \
+    && rm /tmp/chrome-linux64.zip
 
-# Chrome 저장소 등록
-RUN echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
-    > /etc/apt/sources.list.d/google-chrome.list
+# Chrome 실행 파일 경로 설정
+ENV CHROME_BIN=/opt/chrome/chrome-linux64/chrome
+ENV PATH="$CHROME_BIN:$PATH"
 
-# Chrome 114 설치 (최신 버전이 아닌 특정 버전 고정)
-RUN apt-get update \
- && apt-get install -y google-chrome-stable=114.0.5735.90-1 \
- && rm -rf /var/lib/apt/lists/*
-
-# ChromeDriver 114 설치 (버전 고정)
-RUN wget -N https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip -P /tmp/ \
- && unzip /tmp/chromedriver_linux64.zip -d /usr/local/bin/ \
- && rm /tmp/chromedriver_linux64.zip
+# ChromeDriver 133 다운로드 및 설치
+RUN wget -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/133.0.6943.126/linux64/chromedriver-linux64.zip \
+    && unzip /tmp/chromedriver-linux64.zip -d /usr/local/bin/ \
+    && rm /tmp/chromedriver-linux64.zip
 
 # 가상 디스플레이 설정
 ENV DISPLAY=:99
