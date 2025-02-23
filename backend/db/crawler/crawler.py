@@ -45,7 +45,7 @@ class BaseCrawler(ABC):
         # ✅ 프로세스별로 고유한 `user-data-dir` 설정
         options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")
 
-        service = webdriver.chrome.service.Service("/usr/local/bin/chromedriver")  # ✅ Chromedriver 경로 지정
+        service = webdriver.chrome.service.Service("/usr/local/bin/chromedriver-linux64")  # ✅ Chromedriver 경로 지정
         self.driver = webdriver.Chrome(service=service, options=options)
         self.driver.maximize_window()
         self.driver.get(self.url)
