@@ -31,7 +31,8 @@ RUN wget -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-
 
 # 환경 변수 설정 (Selenium이 Chrome 및 Chromedriver를 찾을 수 있도록 함)
 ENV DISPLAY=:99
-ENV PATH="/usr/local/bin:$PATH"
+ENV CHROMEDRIVER_BIN=/usr/local/bin/chromedriver
+ENV PATH="$CHROMEDRIVER_BIN:$PATH"
 
 # Python 패키지 설치
 COPY requirements.txt . 
