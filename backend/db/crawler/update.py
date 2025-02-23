@@ -301,11 +301,8 @@ def update_func():
     dict_ = {"howbouthere": "모텔",
              "threethree": "단기임대"}
     
-    db = get_mongodb()  # ✅ 명시적으로 MongoDB 객체 생성
-    
-    for key, value in dict_.items():
-        titles = get_titles_by_type(value, db)  # ✅ 명시적으로 db 전달
-        data = update(titles, key)
-        update_del(data, db)  # ✅ db 전달
-    
-    db.close()  # ✅ MongoDB 연결 종료
+    with get_mongodb() as db:  # ✅ generator를 컨텍스트 매니저로 사용하여 객체로 변환
+        for key, value in dict_.items():
+            titles = get_titles_by_type(value, db)  # ✅ db가 올바르게 전달됨
+            data = update(titles, key)
+            update_del(data, db)  # ✅ db 전달

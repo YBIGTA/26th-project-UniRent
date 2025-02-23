@@ -6,6 +6,7 @@ from pymongo.collection import Collection
 from typing import Optional, Dict, List
 from bson import ObjectId
 
+
 # 환경 변수 로드
 load_dotenv()
 mongo_url = os.getenv("MONGO_URL")

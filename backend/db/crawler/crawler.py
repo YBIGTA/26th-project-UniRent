@@ -58,7 +58,7 @@ class ThreeThreeCrawler(BaseCrawler):
         options.add_argument("--disable-dev-shm-usage")  # 메모리 부족 문제 방지
         options.add_argument("--disable-gpu")  # GPU 가속 비활성화 (Docker 내에서 필요할 수 있음)
         options.add_argument("--remote-debugging-port=9222")  # 디버깅 포트 설정
-        options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # 고유한 사용자 데이터 디렉토리 지정
+        options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")  # ✅ 프로세스별 디렉토리 지정
 
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
         options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # 고유한 사용자 데이터 디렉토리 지정
@@ -189,7 +189,13 @@ class HowBoutHereCrawler(BaseCrawler):
         self.data = []
         options = Options()
         # options.add_argument("--headless")  # Run in headless mode (no UI)
-        options.add_argument("--disable-gpu")  # Recommended for some systems
+        # options.add_argument("--disable-gpu")  # Recommended for some systems
+        options.add_argument("--no-sandbox")  # 보안 모드 비활성화 (Docker 실행 시 필수)
+        options.add_argument("--disable-dev-shm-usage")  # 메모리 부족 문제 방지
+        options.add_argument("--disable-gpu")  # GPU 가속 비활성화 (Docker 내에서 필요할 수 있음)
+        options.add_argument("--remote-debugging-port=9222")  # 디버깅 포트 설정
+        options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{os.getpid()}")  # ✅ 프로세스별 디렉토리 지정
+
         self.driver:webdriver.Chrome = webdriver.Chrome(options=options)
         self.url = "https://www.yeogi.com/domestic-accommodations?keyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&autoKeyword=%EC%84%9C%EC%9A%B8+%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC&checkIn=2025-02-22&checkOut=2025-02-23&personal=2&freeForm=false"
         self.place = place
