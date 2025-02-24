@@ -4,8 +4,22 @@ from routes import users
 from routes.gateway_routes import gateway_router
 from database import get_db
 from sqlalchemy import text
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="UniRent API Gateway")
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+    "https://d2t3yinxhatolt.cloudfront.net",
+    "https://3.34.99.86:5000",
+    "http://3.34.99.86:5000"
+],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 라우터 등록
 app.include_router(users.router)
