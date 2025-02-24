@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr
 
 # 회원가입 요청 스키마
 class UserCreate(BaseModel):
-    username: str
+    # username: str
     email: EmailStr
     password: str
 

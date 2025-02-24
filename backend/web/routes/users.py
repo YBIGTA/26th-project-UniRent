@@ -8,11 +8,11 @@ from auth import create_access_token, get_current_user
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
 # 회원가입 API
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     # print("받은 요청 데이터:", user)
     # 필수 입력값 검증
-    if not user.username or not user.email or not user.password:
+    if not user.email or not user.password:
         raise HTTPException(status_code=400, detail="필수 입력값이 누락되었습니다.")
 
     # 이메일 중복 확인
@@ -21,7 +21,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=409, detail="이미 존재하는 이메일입니다.")
     
     # 신규 유저 저장
-    new_user = User(username=user.username, email=user.email, password=user.password)
+    new_user = User(email=user.email, password=user.password)
     
     db.add(new_user)
     db.commit()
@@ -34,7 +34,6 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         "message": "회원가입이 완료되었습니다.",
         "data": {
             "userId": new_user.id,
-            "username": new_user.username,
             "email": new_user.email
         }
     }
@@ -69,7 +68,6 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         "message": "로그인 성공",
         "data": {
             "userId": db_user.id,
-            "username": db_user.username,
             "email": db_user.email,
             "token": token
         }
