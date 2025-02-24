@@ -1,27 +1,46 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AppBar } from "../components/AppBar";
 import "./FilteringResultsPage.css";
 
 export const FilteringResultsPage = () => {
-  const location = useLocation(); // ✅ 이전 페이지에서 전달된 데이터 받기
-  const { price, location: selectedLocation, ratings } = location.state || {}; // 기본값 설정
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  console.log("필터링된 값:", { price, selectedLocation, ratings });
+  // FilteringPage에서 넘어온 매물 리스트
+  const { listings = [] } = location.state || {};
 
   return (
     <div className="filtering-results-page">
       <AppBar />
       <main className="results-container">
         <h2>검색 결과</h2>
-        <p>위치: {selectedLocation || "모든 지역"}</p>
-        <p>최대 가격: {price ? `${price.toLocaleString()}원` : "제한 없음"}</p>
-        <p>평점: {ratings && ratings.length > 0 ? ratings.join(", ") : "제한 없음"}</p>
 
-        {/* 실제 필터링된 매물 리스트 추가 예정 */}
-        <div className="no-results">
-          <p>🔍 해당 조건에 맞는 매물이 없습니다.</p>
-        </div>
+        {listings.length > 0 ? (
+          <div className="results-grid">
+            {listings.map((listing) => (
+              <div
+                key={listing._id}
+                className="property-card"
+                onClick={() => navigate(`/details/${listing._id}`)}
+              >
+                <img
+                  src={listing.image || "https://via.placeholder.com/150"}
+                  alt={listing.name}
+                  className="property-image"
+                />
+                <div className="property-info">
+                  <h3 className="property-name">{listing.name}</h3>
+                  <p className="property-price">
+                    {Number(listing.price || 0).toLocaleString()}원
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="no-results">검색 결과가 없습니다.</p>
+        )}
       </main>
     </div>
   );
