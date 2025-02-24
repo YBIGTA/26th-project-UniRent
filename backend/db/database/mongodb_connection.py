@@ -28,7 +28,7 @@ class MongoDB:
         return result.deleted_count  # 삭제된 문서 개수 반환
 
 
-    def add_property(self, property_data: Dict, name: str) -> str:
+    def add_property(self, property_data, name: str) -> str:
         """매물 추가 (필터링을 위한 필드 자동 추가)"""
         property_data["property_id"] = str(ObjectId())  # ObjectId 기반 고유 ID 생성
 

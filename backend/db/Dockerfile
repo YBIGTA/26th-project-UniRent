@@ -42,4 +42,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # FastAPI & Xvfb 실행
-CMD ["bash", "-c", "Xvfb :99 -screen 0 1920x1080x24 & uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["bash", "-c", "Xvfb :99 -screen 0 1920x1080x24 & export DISPLAY=:99 && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+

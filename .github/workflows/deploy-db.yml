@@ -57,6 +57,6 @@ jobs:
 
             # 새 컨테이너 실행 (내부 .env 사용)
             echo "Running the new DB Service container..."
-            sudo docker run -d --name db-service --env-file /home/ubuntu/.env ${{ secrets.DB_SERVICE_DOCKER_USER }}/db-service:latest
+            sudo docker run -d -e DISPLAY=:99 --name db-service --env-file /home/ubuntu/.env ${{ secrets.DB_SERVICE_DOCKER_USER }}/db-service:latest
 
             echo "DB Service Deployment Completed!"

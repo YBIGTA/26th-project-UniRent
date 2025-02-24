@@ -12,6 +12,20 @@ from app.routes import api
 from crawler.crawler import ThreeThreeCrawler, HowBoutHereCrawler
 from crawler.update import *
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # 출력할 로그 레벨 설정
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # 로그 포맷 설정
+    handlers=[
+        logging.StreamHandler()  # 콘솔 출력 핸들러
+        # 필요에 따라 파일 핸들러 추가 가능: logging.FileHandler('app.log')
+    ]
+)
+
+# 이후 다른 모듈에서도 import logging 후 로그 호출 가능
+logging.info("애플리케이션 시작")
+
 # 환경 변수에서 포트 가져오기 (기본값 8000)
 PORT = int(os.getenv("PORT", 8000))
 
@@ -26,9 +40,13 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
+output_dir = "./data"
+Three = ThreeThreeCrawler(output_dir)
+How = HowBoutHereCrawler(output_dir)
+
 CRAWLER_CLASSES = {
-    ThreeThreeCrawler,
-    HowBoutHereCrawler
+    Three,
+    How
 }
 
 # 라우터 등록
@@ -42,10 +60,9 @@ def init_db():
     output_dir = "./data"
     db = MongoDB()  # ✅ 명시적으로 MongoDB 객체 생성
     try:
-        for crawler_class in CRAWLER_CLASSES:
-            crawler = crawler_class(output_dir)
+        for crawler in CRAWLER_CLASSES:
             crawler.scrape_reviews()
-            crawler.send_to_db(crawler_class.name, db)  # ✅ MongoDB 객체 전달
+            crawler.send_to_db(crawler.data, db)  # ✅ MongoDB 객체 전달
     finally:
         db.close()  # ✅ MongoDB 연결 종료
 
