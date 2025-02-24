@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import MainPageTwo from "./pages/MainPageTwo";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import FilteringPage from "./pages/FilteringPage";
 import FilteringResultsPage from "./pages/FilteringResultsPage"; // ✅ 필터링 결과 페이지 추가
+import ListingDetailPage from "./pages/ListingDetailPage";
+
 
 function App() {
   // ✅ localStorage에서 로그인 상태 유지
@@ -49,6 +51,8 @@ function App() {
 
         {/* ✅ 필터링 결과 페이지 */}
         <Route path="/filtering-results" element={<FilteringResultsPage />} />
+        <Route path="/details/:id" element={<ListingDetailPage />} />
+
       </Routes>
     </Router>
   );
