@@ -1,56 +1,108 @@
+/* ✅ 전체 페이지 스타일 */
 .filtering-results-page {
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  /* 필요하다면 높이, 패딩 등을 자유롭게 추가 */
+}
+
+/* ✅ 검색 결과 컨테이너 */
+.results-container {
+  background-color: #ffffff;
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ✅ 검색 결과 그리드
+   한 줄에 최대 4개, 화면이 작아지면 자동으로 줄어듦 */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 최대 4열(열이 많아지지 않음) */
+  gap: 20px;
+  /* 필요하면 세로로 overflow 설정 가능
+     max-height: 80vh;
+     overflow-y: auto; 
+  */
+}
+
+/* ✅ 숙소 카드 */
+.property-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.property-card:hover {
+  transform: scale(1.05);
+}
+
+/* ✅ 숙소 이미지 */
+.property-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* ✅ 숙소 정보 */
+.property-info {
+  margin-top: 10px;
+}
+
+.property-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.property-price {
+  font-size: 16px;
+  color: #1f5abc;
+  font-weight: bold;
+}
+
+/* ✅ 검색 결과 없음 메시지 */
+.no-results {
+  text-align: center;
+  font-size: 16px;
+  color: #888;
+  margin-top: 20px;
+}
+
+/* ✅ 반응형 디자인
+   -> 화면이 좁아질수록 열(column) 수를 줄여 4개 → 3개 → 2개 → 1개 */
+@media (max-width: 1200px) {
+  .results-grid {
+    grid-template-columns: repeat(3, 1fr); /* 한 행 최대 3열 */
   }
-  
-  .results-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    width: 80%;
-    max-width: 1000px;
-    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+  .results-grid {
+    grid-template-columns: repeat(2, 1fr); /* 한 행 최대 2열 */
   }
-  
-  .listing-card {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #dddddd;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out;
+}
+
+@media (max-width: 480px) {
+  .results-grid {
+    grid-template-columns: repeat(1, 1fr); /* 한 행 최대 1열 */
   }
-  
-  .listing-card:hover {
-    transform: scale(1.03);
-  }
-  
-  .listing-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-  }
-  
-  .listing-info {
-    padding: 15px;
-  }
-  
-  .listing-info h3 {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 5px 0;
-  }
-  
-  .listing-type {
-    display: inline-block;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 5px;
-    margin-bottom: 5px;
-  }
+}
