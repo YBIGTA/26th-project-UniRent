@@ -62,6 +62,7 @@ def init_db():
     try:
         for crawler in CRAWLER_CLASSES:
             crawler.scrape_reviews()
+            logging.info(crawler.data)
             crawler.send_to_db(crawler.data, db)  # ✅ MongoDB 객체 전달
     finally:
         db.close()  # ✅ MongoDB 연결 종료
