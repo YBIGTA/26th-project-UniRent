@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/Button";
 import { AppBar } from "../components/AppBar";
-import { Range } from "react-range";
+import { Range } from "react-range"; 
 import "./FilteringPage.css";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://13.125.103.24:8000"; // ✅ 실제 API 서버 URL 사용
 
 export const FilteringPage = () => {
   const navigate = useNavigate();
@@ -14,19 +14,19 @@ export const FilteringPage = () => {
   // 가격 필터
   const [priceRange, setPriceRange] = useState([0, 1000000]);
 
-  // 지역 필터
-  const [region, setRegion] = useState("창천동");
+  // 지역 필터 (초기값 선택 안 함)
+  const [region, setRegion] = useState("");
 
-  // 숙박 유형 필터 (체크박스)
-  const [type, setType] = useState(["단기임대", "모텔"]); // ✅ API에서 사용 가능한 값으로 초기화
+  // 숙박 유형 필터 (초기값 선택 안 함)
+  const [type, setType] = useState([]);
 
   // 로딩 상태
   const [loading, setLoading] = useState(false);
 
   // 지역 목록
-  const regions = ["창천동", "연희동", "홍제동", "북아현동", "남가좌동", "북가좌동", "신촌동"];
+  const regions = ["", "창천동", "연희동", "홍제동", "북아현동", "남가좌동", "북가좌동", "신촌동"];
 
-  // ✅ UI에 표시할 숙박 유형과 실제 API에 보낼 값 매핑
+  // 숙박 유형 필터 (UI 표시용)
   const typeOptions = [
     { apiValue: "단기임대", displayValue: "원룸단기임대" },
     { apiValue: "모텔", displayValue: "모텔/호텔" }
@@ -38,14 +38,14 @@ export const FilteringPage = () => {
 
     // FastAPI 요청 파라미터
     const params = {
-      region,
+      ...(region && { region }), // ✅ 선택한 경우에만 추가
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
-      type: type.length > 0 ? type.join(",") : undefined, // ✅ FastAPI에서는 CSV 문자열로 전달
+      ...(type.length > 0 && { type }) // ✅ 빈 배열이면 추가하지 않음
     };
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/properties`, { params });
+      const response = await axios.get(`${API_BASE_URL}/api/properties`, { params });
 
       if (response.data.properties) {
         navigate("/filtering-results", { state: { listings: response.data.properties } });
@@ -80,7 +80,7 @@ export const FilteringPage = () => {
           <label>지역</label>
           <select value={region} onChange={(e) => setRegion(e.target.value)}>
             {regions.map((reg) => (
-              <option key={reg} value={reg}>{reg}</option>
+              <option key={reg} value={reg}>{reg || "전체 지역"}</option>
             ))}
           </select>
         </div>
@@ -117,11 +117,11 @@ export const FilteringPage = () => {
               <label key={apiValue} className="checkbox-label">
                 <input
                   type="checkbox"
-                  value={apiValue} // ✅ API에서 허용하는 값 ("단기임대" 또는 "모텔")
+                  value={apiValue}
                   checked={type.includes(apiValue)}
                   onChange={() => handleTypeChange(apiValue)}
                 />
-                {displayValue} {/* ✅ 프론트 UI에 표시할 값 ("원룸단기임대", "모텔/호텔") */}
+                {displayValue}
               </label>
             ))}
           </div>
@@ -137,3 +137,4 @@ export const FilteringPage = () => {
 };
 
 export default FilteringPage;
+
