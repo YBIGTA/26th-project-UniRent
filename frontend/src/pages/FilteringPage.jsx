@@ -3,30 +3,45 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/Button";
 import { AppBar } from "../components/AppBar";
-import { Range } from "react-range"; 
+import { Range } from "react-range";
 import "./FilteringPage.css";
 
 const API_BASE_URL = "http://localhost:8000";
 
 export const FilteringPage = () => {
   const navigate = useNavigate();
-  const [priceRange, setPriceRange] = useState([0, 1000000]); // 기본 가격 범위
-  const [region, setRegion] = useState("창천동"); // 기본 지역
-  const [type, setType] = useState(["원룸단기임대", "호텔(모텔)"]); // 기본 체크된 숙박 유형
-  const [loading, setLoading] = useState(false); // API 요청 상태
 
+  // 가격 필터
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
+
+  // 지역 필터
+  const [region, setRegion] = useState("창천동");
+
+  // 숙박 유형 필터 (체크박스)
+  const [type, setType] = useState(["단기임대", "모텔"]); // ✅ API에서 사용 가능한 값으로 초기화
+
+  // 로딩 상태
+  const [loading, setLoading] = useState(false);
+
+  // 지역 목록
   const regions = ["창천동", "연희동", "홍제동", "북아현동", "남가좌동", "북가좌동", "신촌동"];
+
+  // ✅ UI에 표시할 숙박 유형과 실제 API에 보낼 값 매핑
+  const typeOptions = [
+    { apiValue: "단기임대", displayValue: "원룸단기임대" },
+    { apiValue: "모텔", displayValue: "모텔/호텔" }
+  ];
 
   // ✅ 필터 적용 및 API 호출
   const handleApplyFilters = async () => {
     setLoading(true);
 
-    // ✅ FastAPI와 일치하는 쿼리 파라미터 변환
+    // FastAPI 요청 파라미터
     const params = {
       region,
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
-      type: type.length > 0 ? type.join(",") : undefined, // ✅ FastAPI에서는 문자열로 전달
+      type: type.length > 0 ? type.join(",") : undefined, // ✅ FastAPI에서는 CSV 문자열로 전달
     };
 
     try {
@@ -46,9 +61,11 @@ export const FilteringPage = () => {
   };
 
   // ✅ 숙박 유형 체크박스 핸들러
-  const handleTypeChange = (value) => {
+  const handleTypeChange = (apiValue) => {
     setType((prevTypes) =>
-      prevTypes.includes(value) ? prevTypes.filter((t) => t !== value) : [...prevTypes, value]
+      prevTypes.includes(apiValue)
+        ? prevTypes.filter((t) => t !== apiValue) // 체크 해제 시 제거
+        : [...prevTypes, apiValue] // 체크 시 추가
     );
   };
 
@@ -73,7 +90,7 @@ export const FilteringPage = () => {
           <label>가격 범위: {priceRange[0].toLocaleString()}원 ~ {priceRange[1].toLocaleString()}원</label>
           <div className="slider-container">
             <Range
-              step={10000} // ✅ 10,000원 단위 조정
+              step={10000}
               min={0}
               max={1000000}
               values={priceRange}
@@ -92,25 +109,25 @@ export const FilteringPage = () => {
           </div>
         </div>
 
-        {/* ✅ 숙박 유형 필터 (기본 체크 상태) */}
+        {/* ✅ 숙박 유형 필터 (체크박스) */}
         <div className="filter-group">
           <label>숙박 유형</label>
           <div className="checkbox-group">
-            {["원룸단기임대", "호텔(모텔)"].map((option) => (
-              <label key={option} className="checkbox-label">
+            {typeOptions.map(({ apiValue, displayValue }) => (
+              <label key={apiValue} className="checkbox-label">
                 <input
                   type="checkbox"
-                  value={option}
-                  checked={type.includes(option)} // ✅ 기본적으로 두 개 다 체크된 상태
-                  onChange={() => handleTypeChange(option)}
+                  value={apiValue} // ✅ API에서 허용하는 값 ("단기임대" 또는 "모텔")
+                  checked={type.includes(apiValue)}
+                  onChange={() => handleTypeChange(apiValue)}
                 />
-                {option}
+                {displayValue} {/* ✅ 프론트 UI에 표시할 값 ("원룸단기임대", "모텔/호텔") */}
               </label>
             ))}
           </div>
         </div>
 
-        {/* ✅ 필터 적용 버튼 (API 요청 중 비활성화) */}
+        {/* ✅ 필터 적용 버튼 */}
         <Button className="apply-button" onClick={handleApplyFilters} disabled={loading}>
           {loading ? "검색 중..." : "검색"}
         </Button>
