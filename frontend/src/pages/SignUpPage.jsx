@@ -4,7 +4,7 @@ import { Button } from "../components/Button";
 import { TextField } from "../components/TextField";
 import { AppBar } from "../components/AppBar";
 import "./SignUpPage.css";
-import axiosInstance from "../axios";
+import axiosInstance from "../api/axios";
 
 export const SignUpPage = () => {
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ export const SignUpPage = () => {
       alert("회원가입 실패! 이메일 중복 확인 또는 서버 오류입니다.");
     }
   };
-  
+
   return (
     <div className="sign-up-page">
       <AppBar className="app-bar" />

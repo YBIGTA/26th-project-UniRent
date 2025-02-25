@@ -4,7 +4,7 @@ import { Button } from "../components/Button";
 import { TextField } from "../components/TextField";
 import { AppBar } from "../components/AppBar";
 import "./LoginPage.css";
-import axiosInstance from "../axios";
+import axiosInstance from "../api/axios";
 
 export const LoginPage = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ export const LoginPage = ({ setIsAuthenticated }) => {
       alert("로그인 실패! 이메일 또는 비밀번호를 확인하세요.");
     }
   };
-  
+
   return (
     <div className="login-page">
       <AppBar className="app-bar-instance" />
