@@ -1,4 +1,5 @@
-import requests as re
+import requests
+import re 
 from bs4 import BeautifulSoup as bs
 import os
 import json
@@ -368,7 +369,16 @@ class ThreeThreeCrawler(BaseCrawler):
                         # 상세 페이지 URL 저장
                         room_data['url'] = driver.current_url
                         # region 및 type 추가 (클래스 초기화 시 입력한 값 사용)
-                        room_data['region'] = self.place
+                        def extract_region(addr: str) -> str:
+                            """
+                            📌 주소(addr)에서 동(洞) 단위 지역명을 추출하는 함수
+                            예: "서울특별시 서대문구 홍제동 00번지" -> "홍제동"
+                            """
+                            match = re.search(r'([가-힣]+동)', addr)
+                            return match.group(1) if match else "알 수 없음"  # 동 이름이 없으면 "알 수 없음" 반환
+
+                        # 📌 1️⃣ 'region' 필드 자동 추가 (addr에서 동(洞) 추출)
+                        room["region"] = extract_region(room.get("addr", ""))
                         room_data['type'] = self.name
                         
                         found = True
