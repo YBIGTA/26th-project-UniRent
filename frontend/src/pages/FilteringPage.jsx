@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/Button";
 import { AppBar } from "../components/AppBar";
-import { Range } from "react-range"; 
+import { Range } from "react-range";
 import "./FilteringPage.css";
 
 const API_BASE_URL = "http://13.125.103.24:8000"; // ✅ 실제 API 서버 URL 사용
@@ -36,24 +36,28 @@ export const FilteringPage = () => {
   const handleApplyFilters = async () => {
     setLoading(true);
 
-    // FastAPI 요청 파라미터
     const params = {
-      ...(region && { region }), // ✅ 선택한 경우에만 추가
+      region: region || undefined, // 빈 문자열이면 undefined로 처리
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
-      ...(type.length > 0 && { type }) // ✅ 빈 배열이면 추가하지 않음
+      type: type.length > 0 ? type.join(",") : undefined,
     };
+
+    console.log("✅ 필터 적용 버튼 클릭됨, params:", params);
 
     try {
       const response = await axios.get(`${API_BASE_URL}/api/properties`, { params });
 
-      if (response.data.properties) {
-        navigate("/filtering-results", { state: { listings: response.data.properties } });
+      console.log("✅ API 응답:", response.data);
+
+      if (response.data.properties && response.data.properties.length > 0) {
+        console.log("✅ 검색 결과 있음, FilteringResultsPage로 이동");
+        navigate("/filtering-results", { state: { listings: response.data.properties, filters: params } });
       } else {
         alert("검색된 매물이 없습니다.");
       }
     } catch (error) {
-      console.error("필터링 데이터 불러오기 실패:", error);
+      console.error("❌ 필터링 데이터 불러오기 실패:", error);
       alert("서버와 통신 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -64,8 +68,8 @@ export const FilteringPage = () => {
   const handleTypeChange = (apiValue) => {
     setType((prevTypes) =>
       prevTypes.includes(apiValue)
-        ? prevTypes.filter((t) => t !== apiValue) // 체크 해제 시 제거
-        : [...prevTypes, apiValue] // 체크 시 추가
+        ? prevTypes.filter((t) => t !== apiValue)
+        : [...prevTypes, apiValue]
     );
   };
 
@@ -137,4 +141,3 @@ export const FilteringPage = () => {
 };
 
 export default FilteringPage;
-
