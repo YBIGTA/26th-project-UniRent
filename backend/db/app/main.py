@@ -87,9 +87,9 @@ def background_tasks():
     threading.Thread(target=init_update, daemon=True).start()
 
 # ✅ FastAPI가 실행될 때 background_tasks() 실행
-@app.on_event("startup")
-def on_startup():
-    background_tasks()
+# @app.on_event("startup")
+# def on_startup():
+#     background_tasks()
 
 
 if __name__ == "__main__":
