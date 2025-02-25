@@ -111,7 +111,7 @@ class ThreeThreeCrawler(BaseCrawler):
         self.place = place
         self.name = "단기임대"
 
-        def scrape_reviews(self):
+    def scrape_reviews(self):
         driver = self.driver
         driver.get(self.url)
         sleep(3)
