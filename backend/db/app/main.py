@@ -45,8 +45,8 @@ Three = ThreeThreeCrawler(output_dir)
 How = HowBoutHereCrawler(output_dir)
 
 CRAWLER_CLASSES = {
-    Three,
-    How
+    Three
+    # How
 }
 
 # 라우터 등록

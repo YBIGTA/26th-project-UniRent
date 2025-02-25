@@ -111,167 +111,315 @@ class ThreeThreeCrawler(BaseCrawler):
         self.place = place
         self.name = "단기임대"
 
-    def scrape_reviews(self):
-        """단기임대 사이트에서 리뷰를 스크랩"""
+        def scrape_reviews(self):
+        driver = self.driver
+        driver.get(self.url)
+        sleep(3)
+
+        data = []
+        page = 1
+        flag = True
+
+        while flag:
+            try:
+                # 📌 현재 페이지에서 방 목록 가져오기
+                room_elements = driver.find_elements(By.CLASS_NAME, "room_item")
+
+                for index, room in enumerate(room_elements):
+                    try:
+                        # ✅ 방 클릭
+                        room.find_element(By.XPATH, "./ancestor::a").click()
+                        sleep(3)
+                        
+                        # ✅ 새 창으로 이동
+                        windows = driver.window_handles
+                        if len(windows) > 1:
+                            driver.switch_to.window(windows[1])
+
+                        # ✅ HTML 파싱
+                        soup = bs(driver.page_source, 'html.parser')
+                        room_data = {}
+
+                        # 📌 1️⃣ 방 제목 크롤링
+                        title_selector = 'body > div.wrap > section > div > div.room_detail > div.room_info > div.title > strong'
+                        title = soup.select_one(title_selector)
+                        room_data['title'] = title.text.strip() if title else "unknown"
+
+                        # 📌 2️⃣ 이미지 크롤링 및 S3 업로드
+                        try:
+                            s3 = boto3.client(
+                                's3', aws_access_key_id=aws_access_key,
+                                aws_secret_access_key=aws_secret_key,
+                                region_name=aws_region,
+                            )
+                            bucket_name = "uni-rent-bucket"
+                            img_name = room_data['title']
+                            if img_name:
+                                parent_div = driver.find_element(By.CLASS_NAME, 'swiper-wrapper')
+                                images = parent_div.find_elements(By.TAG_NAME, "img")
+                                for idx, img in enumerate(images):
+                                    img_url = img.get_attribute("src")
+                                    if img_url:
+                                        try:
+                                            img_response = requests.get(img_url)
+                                            if img_response.status_code == 200:
+                                                img_data = img_response.content
+                                                sleep(2)
+                                                s3.upload_fileobj(
+                                                    io.BytesIO(img_data), bucket_name, f'{img_name}/{idx}.jpg'
+                                                )
+                                                print(f"✅ S3 업로드 완료: {img_url}")
+                                        except Exception as e:
+                                            print(f"❌ S3 업로드 실패: {img_url}, 오류: {e}")
+                        except Exception as e:
+                            print(f"❌ Swiper 이미지 크롤링 오류: {e}")
+
+                        # 📌 3️⃣ 주소 크롤링
+                        addr_selector = 'body > div.wrap > section > div > div.room_detail > div:nth-child(1) > p'
+                        addr = soup.select_one(addr_selector)
+                        room_data['addr'] = addr.text.strip() if addr else ""
+
+                        # 📌 4️⃣ 가격 크롤링
+                        price_selector = 'body > div.wrap > section > div > div.room_sticky > div.room_pay > p > strong'
+                        price = soup.select_one(price_selector)
+                        room_data['price'] = price.text.strip() if price else ""
+
+                        # 📌 5️⃣ 옵션 크롤링
+                        options = []
+                        option_selectors = [
+                            'body > div.wrap > section > div > div.room_detail > div:nth-child(5) > ul',
+                            'body > div.wrap > section > div > div.room_detail > div:nth-child(6) > ul'
+                        ]
+                        for selector in option_selectors:
+                            option_elements = soup.select(selector)
+                            for option in option_elements:
+                                options.extend([p.text.strip() for p in option.find_all('p')])
+                        room_data['options'] = options
+
+                        # 📌 6️⃣ 방 상세 페이지 URL 저장
+                        room_data['url'] = driver.current_url
+                        data.append(room_data)
+
+                        # ✅ 창 닫기 및 원래 창으로 복귀
+                        driver.close()
+                        driver.switch_to.window(windows[0])
+                        sleep(2)
+
+                    except Exception as e:
+                        print(f"❌ 방 크롤링 오류: {e}")
+
+                # 📌 7️⃣ 다음 페이지로 이동
+                try:
+                    next_page_button = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, 'next'))
+                    )
+                    next_page_button.click()
+                    print("✅ 다음 페이지 이동 성공")
+                    sleep(3)
+
+                except Exception as e:
+                    print("❌ 다음 페이지 없음. 크롤링 종료")
+                    flag = False
+
+            except Exception as e:
+                print("❌ 페이지 크롤링 오류:", e)
+                flag = False
+
+        self.data = data
+
+        # ✅ 크롤링 완료 후 드라이버 종료
+        driver.quit()
+
+
+    def search_titles(self):
+        """매물 목록에서 타이틀(title)만 수집 (방 목록 클릭 방식)"""
         self.start_browser()
         driver = self.driver
         driver.get(self.url)
         sleep(3)
         wait = WebDriverWait(driver, 10)
-        # 페이지 로드 완료 대기 (예: 검색 결과 영역)
         wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
-        # 페이지 로드 후 소스의 일부를 로깅 (디버깅용)
-        logging.info("Initial page source snapshot: %s", driver.page_source[:500])
-       
-        s3 = boto3.client(
-            's3', aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_key,
-            region_name=aws_region,
-            )
-        bucket_name = "uni-rent-bucket"
+        
         data = []
-        page = 1
         flag = True
+
         while flag:
-            for i in range(1, 16):
+            try:
+                # 📌 현재 페이지에서 방 목록 가져오기
+                room_elements = driver.find_elements(By.CLASS_NAME, "room_item")
+                for room in room_elements:
+                    try:
+                        # ✅ 방 클릭
+                        room.find_element(By.XPATH, "./ancestor::a").click()
+                        sleep(3)
+                        
+                        # ✅ 새 창으로 이동
+                        windows = driver.window_handles
+                        if len(windows) > 1:
+                            driver.switch_to.window(windows[1])
+                        
+                        # ✅ 상세 페이지에서 제목 요소 로드 대기 후 HTML 파싱
+                        wait.until(EC.presence_of_element_located(
+                            (By.CSS_SELECTOR, 'body > div.wrap > section > div > div.room_detail > div.room_info > div.title > strong')
+                        ))
+                        soup = bs(driver.page_source, 'html.parser')
+                        title_selector = 'body > div.wrap > section > div > div.room_detail > div.room_info > div.title > strong'
+                        title_elem = soup.select_one(title_selector)
+                        title_text = title_elem.text.strip() if title_elem else ""
+                        data.append({"title": title_text})
+                        logging.info(f"Collected title: {title_text}")
+                        
+                        # ✅ 창 닫기 및 원래 창으로 복귀
+                        driver.close()
+                        driver.switch_to.window(windows[0])
+                        sleep(2)
+                        
+                    except Exception as e:
+                        logging.error("Exception during room title extraction: %s", e, exc_info=True)
+                        if len(driver.window_handles) > 1:
+                            driver.switch_to.window(driver.window_handles[1])
+                            driver.close()
+                            driver.switch_to.window(driver.window_handles[0])
+                # 📌 다음 페이지로 이동
                 try:
-                    # 요소가 클릭 가능할 때까지 대기 후 클릭
-                    link = wait.until(EC.element_to_be_clickable(
-                        (By.XPATH, f'//*[@id="div_search_result_inner"]/div[2]/a[{i}]')
-                    ))
-                    link.click()
+                    next_page_button = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, 'next'))
+                    )
+                    next_page_button.click()
+                    sleep(3)
+                except Exception as e:
+                    logging.error("Next page exception: %s", e, exc_info=True)
+                    flag = False
+                    
+            except Exception as e:
+                logging.error("Exception during room listing extraction: %s", e, exc_info=True)
+                flag = False
+
+        self.data = data
+        driver.quit()
+
+    def scrape_review_by_title(self, target_title):
+        """
+        주어진 제목(target_title)과 일치하는 방의 상세 정보를 스크랩하여
+        {title, addr, price, options, url, region, type} 형식의 딕셔너리로 반환.
+        """
+        # 브라우저 시작 및 초기 페이지 로드
+        self.start_browser()
+        driver = self.driver
+        driver.get(self.url)
+        sleep(3)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
+        
+        room_data = None
+        found = False
+        flag = True
+        
+        while flag and not found:
+            # 현재 페이지에서 방 목록 가져오기
+            room_elements = driver.find_elements(By.CLASS_NAME, "room_item")
+            for room in room_elements:
+                try:
+                    # 방 목록에서 해당 항목 클릭
+                    room.find_element(By.XPATH, "./ancestor::a").click()
                     sleep(3)
                     
-                    # 새 창 전환 후 타이틀 요소가 나타날 때까지 대기
-                    wait.until(EC.number_of_windows_to_be(2))
+                    # 새 창(상세 페이지)로 전환
                     windows = driver.window_handles
                     if len(windows) > 1:
                         driver.switch_to.window(windows[1])
                     
+                    # 상세 페이지의 타이틀 요소 로드 대기
                     wait.until(EC.presence_of_element_located(
                         (By.CSS_SELECTOR, 'body > div.wrap > section > div > div.room_detail > div.room_info > div.title > strong')
                     ))
-                    # 새 창에서 소스의 일부를 로깅
-                    logging.info("Detail page source snapshot: %s", driver.page_source[:500])
-                    
                     soup = bs(driver.page_source, 'html.parser')
-                    room = {}
-                    # title
                     title_selector = 'body > div.wrap > section > div > div.room_detail > div.room_info > div.title > strong'
-                    title = soup.select(title_selector)
-                    room['title'] = title[0].text if title else ""
+                    title_elem = soup.select_one(title_selector)
+                    detail_title = title_elem.text.strip() if title_elem else ""
                     
-                    # images
-                    img_name = room['title']
-                    if img_name:
-                        parent_div = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'swiper-wrapper')))
-                        images = parent_div.find_elements(By.TAG_NAME, "img")
-                        for index, img in enumerate(images):
-                            img_url = img.get_attribute("src")
-                            if img_url:
-                                img_data = re.get(img_url).content
-                                sleep(2)
-                                s3.upload_fileobj(
-                                    io.BytesIO(img_data), bucket_name, f'{img_name}/{index}.jpg'
-                                )
-                    
-                    # addr
-                    addr_selector = 'body > div.wrap > section > div > div.room_detail > div:nth-child(1) > p'
-                    addr = soup.select(addr_selector)
-                    room['addr'] = addr[0].text if addr else ""
-                    
-                    # price
-                    price_table = {}
-                    price_selector = 'body > div.wrap > section > div > div.room_sticky > div.room_pay > p > strong'
-                    price = soup.select(price_selector)
-                    price_table['1week'] = price[0].text if price else ""
-                    room['price_table'] = price_table
+                    # 입력한 제목과 일치하는지 확인
+                    if detail_title == target_title:
+                        room_data = {}
+                        room_data['title'] = detail_title
                         
-                    # options
-                    options = []
-                    option_selector = 'body > div.wrap > section > div > div.room_detail > div:nth-child(5) > ul'
-                    option = soup.select(option_selector)
-                    if option:
-                        for p in option[0].find_all('p', recursive=True):
-                            options.append(p.text)
-                    option_etc_selector = 'body > div.wrap > section > div > div.room_detail > div:nth-child(6) > ul'
-                    option_etc = soup.select(option_etc_selector)
-                    if option_etc:
-                        for p in option_etc[0].find_all('p', recursive=True):
-                            options.append(p.text)
-                    room['options'] = options
-                    room['url'] = driver.current_url
-                    data.append(room)
-                    
-                    # 창 닫기 및 원래 창 복귀
+                        # 주소 추출
+                        addr_selector = 'body > div.wrap > section > div > div.room_detail > div:nth-child(1) > p'
+                        addr_elem = soup.select_one(addr_selector)
+                        room_data['addr'] = addr_elem.text.strip() if addr_elem else ""
+                        
+                        # 가격 추출
+                        price_selector = 'body > div.wrap > section > div > div.room_sticky > div.room_pay > p > strong'
+                        price_elem = soup.select_one(price_selector)
+                        room_data['price'] = price_elem.text.strip() if price_elem else ""
+                        
+                        # 옵션 추출 (두 영역 통합)
+                        options = []
+                        option_selectors = [
+                            'body > div.wrap > section > div > div.room_detail > div:nth-child(5) > ul',
+                            'body > div.wrap > section > div > div.room_detail > div:nth-child(6) > ul'
+                        ]
+                        for selector in option_selectors:
+                            option_elem = soup.select_one(selector)
+                            if option_elem:
+                                options.extend([p.text.strip() for p in option_elem.find_all('p')])
+                        room_data['options'] = options
+                        
+                        # 상세 페이지 URL 저장
+                        room_data['url'] = driver.current_url
+                        # region 및 type 추가 (클래스 초기화 시 입력한 값 사용)
+                        room_data['region'] = self.place
+                        room_data['type'] = self.name
+                        
+                        found = True
+                        # 상세 페이지 창 닫고 목록 창으로 복귀
+                        driver.close()
+                        driver.switch_to.window(windows[0])
+                        break
+                    else:
+                        # 일치하지 않으면 상세 페이지 창 닫고 목록 창으로 돌아감
+                        driver.close()
+                        driver.switch_to.window(windows[0])
+                        sleep(1)
+                except Exception as e:
+                    print(f"Error processing a room: {e}")
+                    # 오류 발생 시, 열린 창이 있다면 닫고 원래 창으로 복귀
                     if len(driver.window_handles) > 1:
                         driver.switch_to.window(driver.window_handles[1])
                         driver.close()
                         driver.switch_to.window(driver.window_handles[0])
-                        wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
-                        sleep(3)
-                    
-                except Exception as e:
-                    logging.error("Exception during crawling item: %s", e, exc_info=True)
-                    flag = False
-                    break
-
-            try:
-                next_index = 1 if page == 1 else (11 if page % 10 == 0 else page % 10 + 1)
-                page += 1
-                next_button = wait.until(EC.element_to_be_clickable(
-                    (By.XPATH, f'//*[@id="div_search_result_inner"]/div[3]/a[{next_index}]')
-                ))
-                next_button.click()
-                wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
-                sleep(3)
-            except Exception as e:
-                logging.error("Next page exception: %s", e, exc_info=True)
-                flag = False
-        self.data = data
-
-    def search_titles(self):
-        """매물 목록에서 타이틀(title)만 수집"""
-        self.start_browser()
-        driver = self.driver
-        driver.get(self.url)
-        sleep(3)
-        wait = WebDriverWait(driver, 10)
-        wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
-
-        data = []
-        page = 1
-        flag = True
-
-        while flag:
-            for i in range(1, 16):
+            
+            # 현재 페이지에서 찾지 못했으면 다음 페이지로 이동 시도
+            if not found:
                 try:
-                    title_element = wait.until(EC.presence_of_element_located(
-                        (By.XPATH, f'//*[@id="div_search_result_inner"]/div[2]/a[{i}]/div[2]/div[1]')
-                    ))
-                    title_text = title_element.text.strip()
-                    data.append({"title": title_text})
-                    logging.info(f"Collected title: {title_text}")
-
+                    next_page_button = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, 'next'))
+                    )
+                    next_page_button.click()
+                    sleep(3)
+                    wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
                 except Exception as e:
-                    logging.error("Exception during title collection: %s", e, exc_info=True)
+                    print("No more pages or error navigating to next page:", e)
                     flag = False
-                    break
-
-            try:
-                next_index = 1 if page == 1 else (11 if page % 10 == 0 else page % 10 + 1)
-                page += 1
-                next_button = wait.until(EC.element_to_be_clickable(
-                    (By.XPATH, f'//*[@id="div_search_result_inner"]/div[3]/a[{next_index}]')
-                ))
-                next_button.click()
-                wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
-                sleep(3)
-            except Exception as e:
-                logging.error("Next page exception: %s", e, exc_info=True)
-                flag = False
         
-        self.data = data 
+        driver.quit()
+        return room_data
+    
+    def delete_properties_by_titles(self, titles: List[str]) -> int:
+        """
+        주어진 제목 리스트에 포함된 모든 매물을 MongoDB 컬렉션에서 삭제합니다.
+        
+        :param titles: 삭제할 매물 제목들의 리스트
+        :return: 삭제된 문서 개수
+        """
+        if not titles:
+            return 0
+
+        result = self.properties.delete_many({"title": {"$in": titles}})
+        return result.deleted_count
+
+
+
 
 
 class HowBoutHereCrawler(BaseCrawler):

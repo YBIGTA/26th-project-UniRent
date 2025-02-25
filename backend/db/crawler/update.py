@@ -22,6 +22,7 @@ def update_func(db: MongoDB, output_dir: str = "./output", place: str = "서대�
         
         # 해당 크롤러 실행 (제목만 가져옴)
         crawler = crawler_cls(output_dir, place)
+        crawler.start_browser()
         crawler.search_titles()
         
         # 신규 데이터 (DB에 없는 제목) 선별
