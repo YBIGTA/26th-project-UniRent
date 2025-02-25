@@ -4,30 +4,22 @@ from database import get_db
 from models import User
 from schemas import UserCreate, UserResponse, UserLogin
 from auth import create_access_token, get_current_user
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
 # 회원가입 API
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    # print("받은 요청 데이터:", user)
-    # 필수 입력값 검증
-    if not user.email or not user.password:
-        raise HTTPException(status_code=400, detail="필수 입력값이 누락되었습니다.")
-
-    # 이메일 중복 확인
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
-        raise HTTPException(status_code=409, detail="이미 존재하는 이메일입니다.")
+        return JSONResponse(status_code=409, content={"success": False, "message": "이미 존재하는 이메일입니다."})
     
-    # 신규 유저 저장
     new_user = User(email=user.email, password=user.password)
-    
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    
-    # 응답 데이터 구성
+
     return {
         "status": 201,
         "success": True,
