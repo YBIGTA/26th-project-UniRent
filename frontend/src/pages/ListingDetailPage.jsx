@@ -4,8 +4,10 @@ import axios from "axios";
 import { AppBar } from "../components/AppBar";
 import "./ListingDetailPage.css";
 
+const API_BASE_URL = "http://13.125.103.24:8000";
+
 export const ListingDetailPage = () => {
-  const { id } = useParams(); // URL 파라미터(매물 ID)를 받는다고 가정
+  const { id } = useParams(); // URL 파라미터(매물 ID)
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,11 +16,17 @@ export const ListingDetailPage = () => {
   useEffect(() => {
     const fetchListingDetail = async () => {
       try {
-        // 실제 API 경로로 변경
-        const response = await axios.get(`http://localhost:8000/api/properties/${id}`);
+        // ✅ 실제 API 사용
+        const response = await axios.get(`${API_BASE_URL}/api/properties/${id}`);
+
+        // 데이터가 없으면 에러 처리
+        if (!response.data || Object.keys(response.data).length === 0) {
+          throw new Error("매물 정보를 찾을 수 없습니다.");
+        }
+
         setListing(response.data);
       } catch (err) {
-        console.error("Error fetching listing details:", err);
+        console.error("매물 정보 불러오기 오류:", err);
         setError("매물 정보를 불러오는 중 오류가 발생했습니다.");
       } finally {
         setLoading(false);
@@ -36,37 +44,40 @@ export const ListingDetailPage = () => {
     <div className="listing-detail-page">
       <AppBar />
       <main className="listing-detail-container">
-        {/* 뒤로가기 버튼 */}
+        {/* 🔙 뒤로가기 버튼 */}
         <button className="back-button" onClick={() => navigate(-1)}>
           ← 뒤로가기
         </button>
 
-        {/* DB에서 넘어온 이미지 그대로 사용 (임시 링크 없음) */}
+        {/* 이미지 (기본 이미지 적용) */}
         <img
-          src={listing.image}
-          alt={listing.title || "매물 이미지"}
+          src={listing.image || "https://via.placeholder.com/300"}
+          alt={listing.name || "매물 이미지"}
           className="listing-image"
         />
 
-        <h2>{listing.title}</h2>
-        <p>{listing.addr}</p>
+        {/* 매물 정보 */}
+        <h2>{listing.name}</h2>
+        <p>{listing.region}</p>
 
-        {/* price_table (객체) => 키-값 쌍을 반복 렌더링 */}
-        {listing.price_table && Object.keys(listing.price_table).length > 0 && (
+        {/* 💰 가격 정보 (객체) */}
+        {listing.price_table && Object.keys(listing.price_table).length > 0 ? (
           <div className="listing-price-table">
             <h3>가격 정보</h3>
             <ul>
               {Object.entries(listing.price_table).map(([roomType, price]) => (
                 <li key={roomType}>
-                  <strong>{roomType}</strong> : {price}원
+                  <strong>{roomType}</strong>: {Number(price).toLocaleString()}원
                 </li>
               ))}
             </ul>
           </div>
+        ) : (
+          <p className="no-price">가격 정보 없음</p>
         )}
 
-        {/* 옵션 (배열) => 목록 렌더링 */}
-        {listing.options && listing.options.length > 0 && (
+        {/* 🛏️ 옵션 (배열) */}
+        {listing.options && listing.options.length > 0 ? (
           <div className="listing-options">
             <h3>옵션</h3>
             <ul>
@@ -75,19 +86,23 @@ export const ListingDetailPage = () => {
               ))}
             </ul>
           </div>
+        ) : (
+          <p className="no-options">제공되는 옵션이 없습니다.</p>
         )}
 
-        {/* 원문 링크도 그대로 표시 (fallback 없음) */}
-        <div className="original-url">
-          <a
-            href={listing.originalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "underline", color: "blue" }}
-          >
-            원문 링크 바로가기
-          </a>
-        </div>
+        {/* 🔗 원문 링크 */}
+        {listing.originalUrl && (
+          <div className="original-url">
+            <a
+              href={listing.originalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="detail-link"
+            >
+              원문 링크 바로가기
+            </a>
+          </div>
+        )}
       </main>
     </div>
   );
