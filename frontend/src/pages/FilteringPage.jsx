@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -38,9 +39,9 @@ export const FilteringPage = () => {
 
     const params = {
       region: region || undefined, // 빈 문자열이면 undefined로 처리
-      minPrice: priceRange[0],
-      maxPrice: priceRange[1],
-      type: type.length > 0 ? type.join(",") : undefined,
+      minPrice: Number(priceRange[0]), // ✅ 숫자로 변환
+      maxPrice: Number(priceRange[1]), // ✅ 숫자로 변환
+      type: type.length === typeOptions.length ? undefined : type.join(","), // ✅ 둘 다 선택하면 전체 결과가 나오게 설정
     };
 
     console.log("✅ 필터 적용 버튼 클릭됨, params:", params);
@@ -113,7 +114,7 @@ export const FilteringPage = () => {
           </div>
         </div>
 
-        {/* ✅ 숙박 유형 필터 (체크박스) */}
+        {/* ✅ 숙박 유형 필터 (체크박스 유지) */}
         <div className="filter-group">
           <label>숙박 유형</label>
           <div className="checkbox-group">
