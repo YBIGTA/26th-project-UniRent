@@ -1,58 +1,109 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import axiosInstance from "./axios"; // ✅ axiosInstance 가져오기
 import MainPage from "./pages/MainPage";
 import MainPageTwo from "./pages/MainPageTwo";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import FilteringPage from "./pages/FilteringPage";
-import FilteringResultsPage from "./pages/FilteringResultsPage"; // ✅ 필터링 결과 페이지 추가
+import FilteringResultsPage from "./pages/FilteringResultsPage"; 
 import ListingDetailPage from "./pages/ListingDetailPage";
 
-
 function App() {
-  // ✅ localStorage에서 로그인 상태 유지
+  // ✅ localStorage에서 JWT 토큰 확인하여 로그인 상태 유지
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem("isAuthenticated") === "true";
+    return !!localStorage.getItem("token");
   });
 
-  // ✅ 로그인 상태가 변경되면 localStorage에 저장
+  // ✅ 로그인 상태 변경 시 localStorage 업데이트
   useEffect(() => {
-    localStorage.setItem("isAuthenticated", isAuthenticated);
+    if (isAuthenticated) {
+      localStorage.setItem("isAuthenticated", "true");
+    } else {
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("token");
+    }
   }, [isAuthenticated]);
 
-  console.log("현재 인증 상태:", isAuthenticated); // ✅ 인증 상태 확인용 콘솔 출력
+  // ✅ 로그인 요청 함수
+  const handleLogin = async (email, password) => {
+    try {
+      const response = await axiosInstance.post('/api/users/login', {
+        email,
+        password
+      });
+      if (response.data.success) {
+        localStorage.setItem("token", response.data.data.token);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error("로그인 실패:", error.response.data);
+    }
+  };
+
+  // ✅ 로그아웃 함수
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+  };
+
+  // ✅ 회원가입 요청 함수
+  const handleSignUp = async (email, password) => {
+    try {
+      const response = await axiosInstance.post('/api/users/signup', {
+        email,
+        password
+      });
+      console.log("회원가입 성공:", response.data);
+    } catch (error) {
+      console.error("회원가입 실패:", error.response.data);
+    }
+  };
 
   return (
     <Router>
       <Routes>
-        {/*         <Route path="/" element={<MainPage />} /> */}
         <Route
           path="/"
           element={
             isAuthenticated ? <Navigate to="/main-two" /> : <MainPage />
           }
         />
-
-        {/* ✅ 로그인 페이지 (로그인하면 MainPageTwo로 이동) */}
-        <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
-        <Route path="/signup" element={<SignUpPage />} />
-
-        {/* ✅ 로그인한 경우에만 MainPageTwo 접근 가능 */}
+        <Route
+          path="/login"
+          element={
+            <LoginPage
+              setIsAuthenticated={setIsAuthenticated}
+              handleLogin={handleLogin} // ✅ 로그인 함수 전달
+            />
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <SignUpPage handleSignUp={handleSignUp} /> // ✅ 회원가입 함수 전달
+          }
+        />
         <Route 
           path="/main-two" 
-          element={isAuthenticated ? <MainPageTwo isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/login" />} 
+          element={
+            isAuthenticated ? (
+              <MainPageTwo 
+                isAuthenticated={isAuthenticated} 
+                setIsAuthenticated={setIsAuthenticated} 
+                handleLogout={handleLogout}  // ✅ 로그아웃 함수 전달
+              />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
-
-        {/* ✅ FilteringPage는 MainPageTwo에서만 접근 가능 */}
         <Route 
           path="/filtering" 
           element={isAuthenticated ? <FilteringPage /> : <Navigate to="/main-two" />} 
         />
-
-        {/* ✅ 필터링 결과 페이지 */}
         <Route path="/filtering-results" element={<FilteringResultsPage />} />
         <Route path="/details/:id" element={<ListingDetailPage />} />
-
       </Routes>
     </Router>
   );
