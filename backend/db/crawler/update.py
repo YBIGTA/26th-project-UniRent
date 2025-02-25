@@ -20,20 +20,26 @@ def update_func(db: MongoDB, output_dir: str = "./output", place: str = "서대�
         # DB에서 해당 타입의 기존 제목 목록 조회
         prev_titles = db.get_titles_by_type(prop_type)
         
-        # 해당 크롤러 실행
+        # 해당 크롤러 실행 (제목만 가져옴)
         crawler = crawler_cls(output_dir, place)
-        crawler.scrape_reviews()
+        crawler.search_titles()
         
         # 신규 데이터 (DB에 없는 제목) 선별
-        new_data = [room for room in crawler.data 
-                    if room.get("title") and room.get("title") not in prev_titles]
-        
-        # 신규 항목 DB 추가
-        for room in new_data:
-            db.add_property(room, prop_type)
-        
-        # 크롤링 결과에 없는 항목은 삭제 (기존 DB 제목 - 새로 크롤링한 제목)
-        new_titles = [room.get("title") for room in crawler.data if room.get("title")]
+        new_titles = [room["title"] for room in crawler.data if room.get("title")]
+        new_data = [title for title in new_titles if title not in prev_titles]
+
+        # 🔹 신규 항목에 대해 상세 정보 수집
+        detailed_data = []
+        for title in new_data:
+            room_details = crawler.scrape_review_by_title(title)  # 🔥 추가된 함수
+            if room_details:
+                detailed_data.append(room_details)
+
+        # 🔹 신규 항목을 DB에 추가
+        if detailed_data:
+            db.add_properties(detailed_data, prop_type)
+
+        # 🔹 기존 DB에 있었으나 크롤링 결과에 없는 항목 삭제
         to_delete = list(set(prev_titles) - set(new_titles))
         if to_delete:
             db.delete_properties_by_titles(to_delete)
