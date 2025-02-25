@@ -20,6 +20,13 @@ import tempfile
 import logging
 import json
 import io
+from dotenv import load_dotenv
+
+load_dotenv()
+aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
+aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+aws_region = os.getenv("AWS_REGION")
+aws_bucket_name = os.getenv("AWS_S3_BUCKET_NAME")
 
 class BaseCrawler(ABC):
     def __init__(self, output_dir: str, place=""):
@@ -116,7 +123,11 @@ class ThreeThreeCrawler(BaseCrawler):
         # 페이지 로드 후 소스의 일부를 로깅 (디버깅용)
         logging.info("Initial page source snapshot: %s", driver.page_source[:500])
        
-        s3 = boto3.client('s3')
+        s3 = boto3.client(
+            's3', aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=aws_region,
+            )
         bucket_name = "uni-rent-bucket"
         data = []
         page = 1
@@ -219,6 +230,48 @@ class ThreeThreeCrawler(BaseCrawler):
                 flag = False
         self.data = data
 
+    def search_titles(self):
+        """매물 목록에서 타이틀(title)만 수집"""
+        self.start_browser()
+        driver = self.driver
+        driver.get(self.url)
+        sleep(3)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
+
+        data = []
+        page = 1
+        flag = True
+
+        while flag:
+            for i in range(1, 16):
+                try:
+                    title_element = wait.until(EC.presence_of_element_located(
+                        (By.XPATH, f'//*[@id="div_search_result_inner"]/div[2]/a[{i}]/div[2]/div[1]')
+                    ))
+                    title_text = title_element.text.strip()
+                    data.append({"title": title_text})
+                    logging.info(f"Collected title: {title_text}")
+
+                except Exception as e:
+                    logging.error("Exception during title collection: %s", e, exc_info=True)
+                    flag = False
+                    break
+
+            try:
+                next_index = 1 if page == 1 else (11 if page % 10 == 0 else page % 10 + 1)
+                page += 1
+                next_button = wait.until(EC.element_to_be_clickable(
+                    (By.XPATH, f'//*[@id="div_search_result_inner"]/div[3]/a[{next_index}]')
+                ))
+                next_button.click()
+                wait.until(EC.presence_of_element_located((By.ID, "div_search_result_inner")))
+                sleep(3)
+            except Exception as e:
+                logging.error("Next page exception: %s", e, exc_info=True)
+                flag = False
+        
+        self.data = data 
 
 
 class HowBoutHereCrawler(BaseCrawler):
@@ -246,7 +299,11 @@ class HowBoutHereCrawler(BaseCrawler):
         # 초기 페이지 소스 스냅샷 로깅 (디버깅용)
         logging.info("HowBoutHere - Initial page source snapshot: %s", driver.page_source[:500])
         
-        s3 = boto3.client('s3')
+        s3 = boto3.client(
+            's3', aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=aws_region,
+            )
         bucket_name = "uni-rent-bucket"
         data = []
         page = 1
