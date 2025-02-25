@@ -4,9 +4,8 @@ import axios from "axios";
 import { AppBar } from "../components/AppBar";
 import "./ListingDetailPage.css";
 
-
 export const ListingDetailPage = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // URL 파라미터(매물 ID)를 받는다고 가정
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,8 +14,8 @@ export const ListingDetailPage = () => {
   useEffect(() => {
     const fetchListingDetail = async () => {
       try {
-        // 실제 API 주소로 변경
-        const response = await axios.get(`http://localhost:8000/properties/${id}`);
+        // 실제 API 경로로 변경
+        const response = await axios.get(`http://localhost:8000/api/properties/${id}`);
         setListing(response.data);
       } catch (err) {
         console.error("Error fetching listing details:", err);
@@ -29,17 +28,9 @@ export const ListingDetailPage = () => {
     fetchListingDetail();
   }, [id]);
 
-  if (loading) {
-    return <p className="loading">로딩 중...</p>;
-  }
-
-  if (error) {
-    return <p className="error">{error}</p>;
-  }
-
-  if (!listing) {
-    return <p className="no-property">해당 매물을 찾을 수 없습니다.</p>;
-  }
+  if (loading) return <p className="loading">로딩 중...</p>;
+  if (error) return <p className="error">{error}</p>;
+  if (!listing) return <p className="no-property">해당 매물을 찾을 수 없습니다.</p>;
 
   return (
     <div className="listing-detail-page">
@@ -50,35 +41,53 @@ export const ListingDetailPage = () => {
           ← 뒤로가기
         </button>
 
-        {/* 이미지 */}
+        {/* DB에서 넘어온 이미지 그대로 사용 (임시 링크 없음) */}
         <img
-          src={listing.image || "https://via.placeholder.com/300"}
+          src={listing.image}
           alt={listing.title || "매물 이미지"}
           className="listing-image"
         />
 
-        {/* 매물 정보 */}
-        <h2>{listing.title || listing.name}</h2>
-        <p>
-          <strong>위치:</strong> {listing.location || listing.region}
-        </p>
-        <p>
-          <strong>가격:</strong> {Number(listing.price || 0).toLocaleString()}원
-        </p>
-        {/* 평점이나 추가 필드가 있을 경우 */}
-        {listing.rating && (
-          <p>
-            <strong>평점:</strong> {listing.rating} / 5
-          </p>
-        )}
-        {listing.description && (
-          <p>
-            <strong>설명:</strong> {listing.description}
-          </p>
+        <h2>{listing.title}</h2>
+        <p>{listing.addr}</p>
+
+        {/* price_table (객체) => 키-값 쌍을 반복 렌더링 */}
+        {listing.price_table && Object.keys(listing.price_table).length > 0 && (
+          <div className="listing-price-table">
+            <h3>가격 정보</h3>
+            <ul>
+              {Object.entries(listing.price_table).map(([roomType, price]) => (
+                <li key={roomType}>
+                  <strong>{roomType}</strong> : {price}원
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
-        {/* 예약하기 등 추가 버튼 */}
-        <button className="reserve-button">예약하기</button>
+        {/* 옵션 (배열) => 목록 렌더링 */}
+        {listing.options && listing.options.length > 0 && (
+          <div className="listing-options">
+            <h3>옵션</h3>
+            <ul>
+              {listing.options.map((opt, idx) => (
+                <li key={idx}>{opt}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* 원문 링크도 그대로 표시 (fallback 없음) */}
+        <div className="original-url">
+          <a
+            href={listing.originalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "underline", color: "blue" }}
+          >
+            원문 링크 바로가기
+          </a>
+        </div>
       </main>
     </div>
   );
