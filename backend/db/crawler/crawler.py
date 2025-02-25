@@ -405,7 +405,7 @@ class ThreeThreeCrawler(BaseCrawler):
         driver.quit()
         return room_data
     
-    def delete_properties_by_titles(self, titles: List[str]) -> int:
+    def delete_properties_by_titles(self, titles) -> int:
         """
         주어진 제목 리스트에 포함된 모든 매물을 MongoDB 컬렉션에서 삭제합니다.
         
