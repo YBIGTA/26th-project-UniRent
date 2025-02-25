@@ -4,22 +4,27 @@ import { Button } from "../components/Button";
 import { TextField } from "../components/TextField";
 import { AppBar } from "../components/AppBar";
 import "./SignUpPage.css";
+import axiosInstance from "../api/axios";
 
 export const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
-    console.log("입력된 이메일:", email);
-    console.log("입력된 비밀번호:", password);
-
-    if (email.trim() !== "" && password.trim() !== "") {
-      alert("계정이 생성되었습니다! 로그인하세요.");
-      navigate("/login");
-    } else {
-      alert("이메일과 비밀번호를 입력해주세요.");
+    try {
+      const response = await axiosInstance.post("/signup", {
+        email,
+        password
+      });
+      if (response.data.success) {
+        alert("회원가입이 완료되었습니다! 로그인하세요.");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("회원가입 실패:", error.response.data);
+      alert("회원가입 실패! 이메일 중복 확인 또는 서버 오류입니다.");
     }
   };
 
