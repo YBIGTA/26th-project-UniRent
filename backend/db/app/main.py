@@ -79,9 +79,9 @@ def init_update():
 
 def background_tasks():
     # ✅ 크롤링 및 DB 저장이 완료될 때까지 기다림
-    db_thread = threading.Thread(target=init_db)
-    db_thread.start()
-    db_thread.join()  # ✅ init_db()가 완료될 때까지 대기
+    # db_thread = threading.Thread(target=init_db)
+    # db_thread.start()
+    # db_thread.join()  # ✅ init_db()가 완료될 때까지 대기
 
     # ✅ init_db()가 완료된 후 업데이트 실행
     threading.Thread(target=init_update, daemon=True).start()
