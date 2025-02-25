@@ -86,7 +86,7 @@ def background_tasks():
     # ✅ init_db()가 완료된 후 업데이트 실행
     threading.Thread(target=init_update, daemon=True).start()
 
-✅ FastAPI가 실행될 때 background_tasks() 실행
+# ✅ FastAPI가 실행될 때 background_tasks() 실행
 @app.on_event("startup")
 def on_startup():
     background_tasks()
